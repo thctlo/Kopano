@@ -3,6 +3,7 @@
 # Version 1.0, 2019 Feb 12
 # Updated 1.1, 2019 Feb 12, added z-push repo.
 # Updated 1.2, 2019 Feb 12, added libreoffice online repo.
+# Updated 1.3, 2019 Feb 12, added check on lynx and curl
 
 # By Louis van Belle
 # Tested on Debian 9 amd64
@@ -41,16 +42,24 @@ BASE_FOLDER=/home/kopano
 # A subfolder in BASE_FOLDER.
 KOPANO_EXTRACT2FOLDER="apt"
 
-# We need the lsb-release package.
-if [ "$(dpkg -l 'lsb-release' | grep -c 'ii')" -eq 0 ]
-then
-    echo "Please wait, running apt-get update and installing lsb-release"
-    apt-get update -y -q 2&>/dev/null
-    apt-get install lsb-release -y
-fi
-# apt-get install curl lynx --no-install-recommendsd
+# We need the lsb-release package. (space separeted).
+NEEDED_PACKAGES="lsb-release curl lynx"
+
+
+for NeededPackages in ${NEEDED_PACKAGES}
+do
+    if [ "$(dpkg -l "$NeededPackages" | grep -c 'ii')" -eq 0 ]
+    then
+        echo "Please wait, running apt-get update and installing lsb-release"
+        apt-get update -y -q 2&>/dev/null
+        apt-get install "${NeededPackages}" -y
+    else
+        echo "Package ${NeededPackages} was already installed."
+    fi
+done
 
 #### Program
+# Setup base folder.
 if [ ! -d $BASE_FOLDER ]
 then
     mkdir $BASE_FOLDER
@@ -59,12 +68,13 @@ else
     cd $BASE_FOLDER || exit
 fi
 
-
+# set needed variables
 OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
 OSDISTVER="$(lsb_release -sr)"
 OSDISTVER0="$(lsb_release -sr|cut -c1).0"
 
+# check OS/version
 if [ "${OSNAME}" = "Debian" ]
 then
     # Needed for Kopano Community ( used Debian_9.0 )
@@ -219,3 +229,4 @@ echo " "
 echo " "
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"
 echo "The Outlook extension : https://download.kopano.io/community/olextension:/"
+

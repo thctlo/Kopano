@@ -39,3 +39,12 @@ The script its defaults wil do following for you.
   To enable the webserver, install a webserver ( apache/nginx ) and symlink /home/kopano/apt/ to /var/www/html/apt
   And dhange localhost to you hostname of ip.  
 
+If you like my work, support me a bit, even with 1 $ your helping me.
+I dont ask for hunderds, a (few) buck(s) are a great gift also. 
+
+## donations
+
+- [Donate via Paypal](https://www.paypal.me/LouisVanBelle) (my paypal email is louis at van-belle .nl)
+- Donate via Bitcoin: 3BMEXFUrncjVKByryNU1fcVLBLKE8i9TpX
+
+## Thanks

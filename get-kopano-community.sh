@@ -132,7 +132,7 @@ then
             then
                 echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
                 # we move the previous version.
-                mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)+%s"
+                mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
             fi
         fi
     else

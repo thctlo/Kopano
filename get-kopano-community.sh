@@ -1,29 +1,58 @@
 #!/usr/env bash
 
-# Version 1.0, 2019 Feb 12
-# Updated 1.1, 2019 Feb 12, added z-push repo.
-# Updated 1.2, 2019 Feb 12, added libreoffice online repo.
-# Updated 1.3, 2019 Feb 12, added check on lynx and curl
-
-# By Louis van Belle
-# Tested on Debian 9 amd64
 
 # Kopano Core Communtiy Packages Downloader
-# you run it, it get the lastest versions and your ready to install kopano.
-# a local file repo is create, which you can use for a webserver also.
+#
+# By Louis van Belle
+# Tested on Debian 9 amd64, should work on Ubuntu 16.04/18.04 also.
+#
+# You run it, it get the lastest versions of Kopano and your ready to install.
+# A local file repo is create, which you can use for a webserver also.
+#
 # Use at own risk, use it, change it if needed and share it.!
+
+# Version 1.0, 2019 Feb 12, Added on github.
+# https://github.com/thctlo/Kopano/blob/master/get-kopano-community.sh
+#
+# Updated 1.1, 2019-02-12, added z-push repo.
+# Updated 1.2, 2019-02-12, added libreoffice online repo.
+# Updated 1.3, 2019-02-12, added check on lynx and curl
+# Updated 1.3.1, 2019-02-14, added check for failing packages at install
+# Updated Fix typos
+# Updates 1.4, 2019-02-15, added autobackup
 
 # Sources used:
 # https://download.kopano.io/community/
 # https://documentation.kopano.io/kopanocore_administrator_manual
 # https://wiki.z-hub.io/display/ZP/Installation
 
+# For the quick and unpatient, keep the below defaults and run :
+# wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
+# apt install kopano-server-packages
+# Optional, when you are upgrading: apt dist-upgrade && kopano-dbadm usmp
+#
+# Dont change the base folder once its set!
+# If you do you need to change the the file:
+#  /etc/apt/sources.list.d/local-file.list also.
+BASE_FOLDER=/home/kopano
+
+# A subfolder in BASE_FOLDER.
+KOPANO_EXTRACT2FOLDER="apt"
+
+# Autobackup the previous version.
+# A backup will be made of the apt/$ARCH folder to backukp/
+# The backup path is relative to the BASE_FOLDER.
+ENABLE_AUTO_BACKUP="yes"
+
+# The Kopano Community link.
 KOPANO_COMMUNITIE_URL="https://download.kopano.io/community"
+# The packages you can pull and put directly in to the repo.
 KOPANO_COMMUNITIE_PKG="core archiver deskapp files mattermost mdm meet smime webapp webmeetings"
 
 # TODO
 # make function for regular .tar.gz files like :
-# kapp konnect kweb libkcoidc mattermost-plugin-kopanowebmeetings mattermost-plugin-notifymatters
+# kapp konnect kweb libkcoidc mattermost-plugin-kopanowebmeetings
+# mattermost-plugin-notifymatters
 
 # If you want z-push available also in your apt, set this to yes.
 # z-push repo stages.
@@ -34,18 +63,14 @@ ENABLE_Z_PUSH_REPO="yes"
 # see deb https://download.kopano.io/community/libreofficeonline/
 ENABLE_LIBREOFFICE_ONLINE="yes"
 
-# Dont change the base once its set.
-# If you do you need to change the the file:
-#  /etc/apt/sources.list.d/local-file.list also.
-BASE_FOLDER=/home/kopano
-
-# A subfolder in BASE_FOLDER.
-KOPANO_EXTRACT2FOLDER="apt"
+################################################################################
+##### Needed for this program.
 
 # We need the lsb-release package. (space separeted).
 NEEDED_PACKAGES="lsb-release curl lynx"
 
 
+#### Program
 for NeededPackages in ${NEEDED_PACKAGES}
 do
     if [ "$(dpkg -l "$NeededPackages" | grep -c 'ii')" -eq 0 ]
@@ -53,14 +78,19 @@ do
         echo "Please wait, running apt-get update and installing lsb-release"
         apt-get update -y -q 2&>/dev/null
         apt-get install "${NeededPackages}" -y
+        if [ "$?" -ge 1 ]
+        then
+            echo "Error detected at install of package : ${NeededPackages}"
+            echo "Exiting now"
+            exit 1
+        fi
     else
         echo "Package ${NeededPackages} was already installed."
     fi
 done
 
-#### Program
-# Setup base folder.
-if [ ! -d $BASE_FOLDER ]
+# Setup base folder en enter it.
+if [ ! -d "${BASE_FOLDER}/" ]
 then
     mkdir $BASE_FOLDER
     cd $BASE_FOLDER || exit
@@ -73,7 +103,6 @@ OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
 OSDISTVER="$(lsb_release -sr)"
 OSDISTVER0="$(lsb_release -sr|cut -c1).0"
-
 # check OS/version
 if [ "${OSNAME}" = "Debian" ]
 then
@@ -84,14 +113,47 @@ then
     # For ubuntu results in Ubuntu_18.04
     GET_OS="${OSNAME}_${OSDISTVER}"
 fi
-
 GET_ARCH="$(dpkg --print-architecture)"
+
+
+### Autobackup
+if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
+then
+    if [ -d $BASE_FOLDER ]
+    then
+        cd $BASE_FOLDER
+        if [ ! -d backups ]
+        then
+            mkdir backups
+        fi
+        if [ ! -d "${GET_ARCH}-$(date +%F)" ]
+        then
+            if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
+            then
+                echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
+                # we move the previous version.
+                mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)+%s"
+            fi
+        fi
+    else
+        echo "Error, $BASE_FOLDER was not available, possible first time this is running."
+        echo "We will skip the autobackup since there is noting to backup."
+    fi
+fi
 
 ### Core start
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 
+# Create extract to folders, needed for then next part. get packages.
+if [ ! -d $KOPANO_EXTRACT2FOLDER ]
+then
+    mkdir $KOPANO_EXTRACT2FOLDER
+fi
+
+# get packages and extract them in KOPANO_EXTRACT2FOLDER
 for pkglist in $KOPANO_COMMUNITIE_PKG
 do
+    # packages listed here must be maintained manualy.. ( the -all versions )
     if [ "${pkglist}" = "files" ]||[ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
     then
         echo "Getting and extracting $pkglist to ${KOPANO_EXTRACT2FOLDER}. ( -all ) "
@@ -104,14 +166,17 @@ do
     fi
 done
 
-if [ ! -d $KOPANO_EXTRACT2FOLDER ]
+# Enter extract folder
+if [ -d $KOPANO_EXTRACT2FOLDER ]
 then
-    mkdir $KOPANO_EXTRACT2FOLDER
     cd $KOPANO_EXTRACT2FOLDER || exit
 else
-    cd $KOPANO_EXTRACT2FOLDER || exit
+    echo "Errors, something is wrong here, we should enter  $KOPANO_EXTRACT2FOLDER"
+    echo "But its not working, exiting now..."
+    exit 1
 fi
 
+# Create arch based folder.
 if [ "${GET_ARCH}" = "amd64" ]; then
     if [ ! -d amd64 ]; then
         mkdir amd64
@@ -121,15 +186,29 @@ if [ "${GET_ARCH}" = "amd64" ]; then
         fi
     fi
 fi
-# Create arch based folder.
+# move files
 if [ "${GET_ARCH}" = "amd64" ]; then
     mv -n ./*_amd64.deb amd64/
     mv -n ./*_all.deb amd64/
+    # remove left overs
     rm ./*.deb
+    # remove 2 left overs from kopano-archiver
+    rm ./Packages
+    rm ./Packages.gz
+    rm ./Release
+    rm ./Release.pgp
+    rm ./Release.key
 elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
     mv -n ./*_i386.deb i386/
     mv -n ./*_all.deb i386/
+    # remove left overs
     rm ./*.deb
+    # remove 2 left overs from kopano-archiver
+    rm ./Packages
+    rm ./Packages.gz
+    rm ./Release
+    rm ./Release.gpg
+    rm ./Release.key
 fi
 
 # Create the Packages file so apt knows what to get.
@@ -223,10 +302,10 @@ if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
 fi
 ### LibreOffice Online End
 
+
 echo "Kopano core versions available on the repo now are : "
 apt-cache policy kopano-server-packages
 echo " "
 echo " "
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"
 echo "The Outlook extension : https://download.kopano.io/community/olextension:/"
-

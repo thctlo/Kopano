@@ -14,7 +14,7 @@ For the quick and unpatient, keep the defaults and run:
 wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash  
 apt install kopano-server-packages
 
-And see the new versions you can use/install:  
+And too see the new versions you can use/install:  
 apt-cache policy kopano-server-packages kopano-webapp z-push-kopano libreoffice-online
 
 Note, when you are upgrading and you might see packages are "kept back".  

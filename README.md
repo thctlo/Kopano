@@ -27,7 +27,7 @@ The script its defaults wil do following for you.
 - create a folder /home/kopano
 - create a subfolder apt
 - create a subfolder backups
-- pulls the files for the Kopano community site.
+- pulls the files from the Kopano community site.
 - make a backup of the previous version to /home/kopano/backups/OS-ARCH-Date
 - cleanup letovers in apt
 - adds z-push repo ( /etc/apt/sources.list.d/kopano-z-push.list ) 
@@ -38,7 +38,6 @@ The script its defaults wil do following for you.
   - Webserver setup for Kopano Community. deb [trusted=yes] http://localhost/apt amd64/
   To enable the webserver, install a webserver ( apache/nginx ) and symlink /home/kopano/apt/ to /var/www/html/apt
   And dhange localhost to you hostname of ip.  
-
 
 
 ## donations

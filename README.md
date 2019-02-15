@@ -43,7 +43,7 @@ The script its defaults wil do following for you.
 
 ## donations
 If you like my work, support me a bit, even with 1 $ your helping me.  
-I dont ask for hunderds, a (few) buck(s) are a great gift also.  
+I dont ask for hunderds, a (few) buck(s) is/are a great gift also.  
 - [Donate via Paypal](https://www.paypal.me/LouisVanBelle) (my paypal email is louis at van-belle .nl)
 - Donate via Bitcoin: 3BMEXFUrncjVKByryNU1fcVLBLKE8i9TpX
 

@@ -20,6 +20,7 @@
 # Updated 1.3.1, 2019-02-14, added check for failing packages at install
 # Updated Fix typos
 # Updates 1.4, 2019-02-15, added autobackup
+# Updates 1.4.1, 2019-02-15, few small fixes
 
 # Sources used:
 # https://download.kopano.io/community/
@@ -196,7 +197,7 @@ if [ "${GET_ARCH}" = "amd64" ]; then
     rm ./Packages
     rm ./Packages.gz
     rm ./Release
-    rm ./Release.pgp
+    rm ./Release.gpg
     rm ./Release.key
 elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
     mv -n ./*_i386.deb i386/

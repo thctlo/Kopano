@@ -11,7 +11,7 @@ It also adds the z-push repo en libreoffice-online repo for you.
 I've also added an autobackup function, so you can revert to a previous version if needed.
 
 For the quick and unpatient, keep the defaults and run:  
-wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
+wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash  
 apt install kopano-server-packages
 
 And see the new versions you can use/install:  

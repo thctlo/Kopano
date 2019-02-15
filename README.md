@@ -34,10 +34,11 @@ The script its defaults wil do following for you.
 - adds libreoffice repo  ( /etc/apt/sources.list.d/kopano-libreoffice-online.list ) 
 - setups the local-file repo ( /etc/apt/sources.list.d/kopano-community.list ) 
   the repo example file : 
-  - File setup for Kopano Community :   deb [trusted=yes] file:/home/kopano/apt/ amd64/
-  - Webserver setup for Kopano Community. deb [trusted=yes] http://localhost/apt amd64/
-  To enable the webserver, install a webserver ( apache/nginx ) and symlink /home/kopano/apt/ to /var/www/html/apt
-  And dhange localhost to you hostname of ip.  
+  - File setup for Kopano Community: deb [trusted=yes] file:/home/kopano/apt/ amd64/  
+  - Webserver setup for Kopano Community: deb [trusted=yes] http://localhost/apt amd64/  
+  To enable the webserver, install a webserver ( apache/nginx )  
+  Now symlink /home/kopano/apt/ to /var/www/html/apt
+  And dont forget to change localhost to you hostname of ip of you server.  
 
 
 ## donations

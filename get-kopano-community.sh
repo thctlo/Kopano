@@ -66,10 +66,14 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 
 ################################################################################
 ##### Needed for this program.
+if ! [[ $EUID -eq 0 ]]
+then
+    error "This script should be run using sudo or by root."
+  exit 1
+fi
 
 # We need the lsb-release package. (space separeted).
 NEEDED_PACKAGES="lsb-release curl lynx"
-
 
 #### Program
 for NeededPackages in ${NEEDED_PACKAGES}

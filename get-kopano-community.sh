@@ -21,6 +21,7 @@
 # Updated Fix typos
 # Updates 1.4, 2019-02-15, added autobackup
 # Updates 1.4.1, 2019-02-15, few small fixes
+# Updates 1.4.2, 2019-02-18, added sudo/root check.
 
 # Sources used:
 # https://download.kopano.io/community/

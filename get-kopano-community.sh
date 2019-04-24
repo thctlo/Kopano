@@ -97,13 +97,7 @@ do
 done
 
 # Setup base folder en enter it.
-if [ ! -d "${BASE_FOLDER}/" ]
-then
-    mkdir $BASE_FOLDER
-    cd $BASE_FOLDER || exit
-else
-    cd $BASE_FOLDER || exit
-fi
+mkdir -p $BASE_FOLDER
 
 # set needed variables
 OSNAME="$(lsb_release -si)"

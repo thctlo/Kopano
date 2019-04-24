@@ -81,8 +81,8 @@ for var in $NEEDED_PROGRAMS; do
 done
 
 # Setup base folder en enter it.
-mkdir -p $BASE_FOLDER
-cd $BASE_FOLDER
+mkdir -p "$BASE_FOLDER"
+cd "$BASE_FOLDER"
 
 # set needed variables
 OSNAME="$(lsb_release -si)"

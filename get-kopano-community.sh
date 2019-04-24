@@ -1,4 +1,4 @@
-#!/usr/env bash
+#!/usr/bin/env bash
 
 
 # Kopano Core Communtiy Packages Downloader

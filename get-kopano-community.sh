@@ -36,7 +36,7 @@ set -euo pipefail
 # Dont change the base folder once its set!
 # If you do you need to change the the file:
 #  /etc/apt/sources.list.d/local-file.list also.
-BASE_FOLDER=/home/kopano
+BASE_FOLDER=$HOME/kopano-repo
 
 # A subfolder in BASE_FOLDER.
 KOPANO_EXTRACT2FOLDER="apt"

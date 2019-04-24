@@ -38,7 +38,6 @@ set -euo pipefail
 # If you do you need to change the the file:
 #  /etc/apt/sources.list.d/local-file.list also.
 BASE_FOLDER=$HOME/kopano-repo
-BASE_FOLDER=/tmp/kopano-repo
 
 # A subfolder in BASE_FOLDER.
 KOPANO_EXTRACT2FOLDER="apt"

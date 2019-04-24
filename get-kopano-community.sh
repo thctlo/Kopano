@@ -37,6 +37,7 @@ set -euo pipefail
 # If you do you need to change the the file:
 #  /etc/apt/sources.list.d/local-file.list also.
 BASE_FOLDER=$HOME/kopano-repo
+BASE_FOLDER=/tmp/kopano-repo
 
 # A subfolder in BASE_FOLDER.
 KOPANO_EXTRACT2FOLDER="apt"
@@ -74,7 +75,7 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 #fi
 
 # We need the lsb-release package
-NEEDED_PROGRAMS="lsb_release curl lynx"
+NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gpg2 lynx sudo tee"
 
 #### Program
 for var in $NEEDED_PROGRAMS; do
@@ -191,11 +192,8 @@ then
     echo "#deb [trusted=yes] http://localhost/apt ${GET_ARCH}/"
     echo "# to enable the webserver, install a webserver ( apache/nginx )"
     echo "# and symlink ${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ to /var/www/html/${KOPANO_EXTRACT2FOLDER}"
-    } > /etc/apt/sources.list.d/kopano-community.list
+    } | sudo tee /etc/apt/sources.list.d/kopano-community.list > /dev/null
 fi
-
-echo "Please wait, running apt-get update"
-apt-get update -qy 2&>/dev/null
 
 echo " "
 echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/kopano-community.list"
@@ -218,14 +216,14 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
             echo "# old-final = old-stable, final = stable, pre-final=testing, develop = experimental"
             echo "# "
             echo "deb ${SET_Z_PUSH_REPO}"
-            } > /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}"
+            } | sudo tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
             echo "Created file : /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
         fi
 
         # install the repo key once.
         if [ "$(apt-key list | grep -c kopano)" -eq 0 ]; then
             echo -n "Installing z-push signing key : "
-            wget -qO - http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | sudo apt-key add -
+            curl -vs http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | sudo apt-key add -
         else
             echo "The Kopano Z_PUSH repo key was already installed."
         fi
@@ -254,7 +252,7 @@ if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
                 echo "# Documentation: https://documentation.kopano.io/kopano_loo-documentseditor/"
                 echo "# "
                 echo "deb ${SET_OFFICE_ONLINE_REPO}"
-                } > /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}"
+                } | sudo tee /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" > /dev/null
                 echo "Created file : /etc/apt/sources.list.d/${SET_OFFICE_ONLINE_FILENAME}"
             fi
         else
@@ -267,8 +265,10 @@ if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
 fi
 ### LibreOffice Online End
 
+echo "Please wait, running apt-get update"
+sudo apt-get update -qy 2&>/dev/null
 
-echo "Kopano core versions available on the repo now are : "
+echo "Kopano core versions available on the repo now are: "
 apt-cache policy kopano-server-packages
 echo " "
 echo " "

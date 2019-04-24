@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IFS=$'\n\t'
 
 # Kopano Core Communtiy Packages Downloader
 #
@@ -74,26 +73,14 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 #    exit 1
 #fi
 
-# We need the lsb-release package. (space separeted).
-NEEDED_PACKAGES="lsb-release curl lynx"
+# We need the lsb-release package
+NEEDED_PROGRAMS="lsb_release curl lynx"
 
-# TODO does not work on Ubuntu 16.04 (E: Unable to locate package lsb-release curl lynx)
 #### Program
-for NeededPackages in ${NEEDED_PACKAGES}
-do
-    if [ "$(dpkg -l "$NeededPackages" | grep -c 'ii')" -eq 0 ]
-    then
-        echo "Please wait, running apt-get update and installing lsb-release"
-        sudo apt-get update -y -q 2&>/dev/null
-        #sudo apt-get install "${NeededPackages}" -y
-        if [ "$?" -ge 1 ]
-        then
-            echo "Error detected at install of package : ${NeededPackages}"
-            echo "Exiting now"
-            exit 1
-        fi
-    else
-        echo "Package ${NeededPackages} was already installed."
+for var in $NEEDED_PROGRAMS; do
+    if ! command -v "$var" &> /dev/null; then
+        echo "$var is missing. Please install it and rerun the script."
+        exit 1
     fi
 done
 
@@ -129,6 +116,7 @@ then
         # we move the previous version.
         mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
     fi
+fi
 
 ### Core start
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"

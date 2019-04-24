@@ -98,6 +98,7 @@ done
 
 # Setup base folder en enter it.
 mkdir -p $BASE_FOLDER
+cd $BASE_FOLDER
 
 # set needed variables
 OSNAME="$(lsb_release -si)"
@@ -116,30 +117,23 @@ then
 fi
 GET_ARCH="$(dpkg --print-architecture)"
 
-
+# TODO this block does not really make sense, rewrite it so that if moves artifacts from previous runs in a more compact way
 ### Autobackup
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
-    if [ -d $BASE_FOLDER ]
+    mkdir backups
+    if [ ! -d "${GET_ARCH}-$(date +%F)" ]
     then
-        cd $BASE_FOLDER
-        if [ ! -d backups ]
+        if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
         then
-            mkdir backups
+            echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
+            # we move the previous version.
+            mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
         fi
-        if [ ! -d "${GET_ARCH}-$(date +%F)" ]
-        then
-            if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
-            then
-                echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
-                # we move the previous version.
-                mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
-            fi
-        fi
-    else
-        echo "Error, $BASE_FOLDER was not available, possible first time this is running."
-        echo "We will skip the autobackup since there is noting to backup."
     fi
+else
+    echo "Error, $BASE_FOLDER was not available, possible first time this is running."
+    echo "We will skip the autobackup since there is noting to backup."
 fi
 
 ### Core start

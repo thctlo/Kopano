@@ -48,9 +48,9 @@ KOPANO_EXTRACT2FOLDER="apt"
 ENABLE_AUTO_BACKUP="yes"
 
 # The Kopano Community link.
-KOPANO_COMMUNITIE_URL="https://download.kopano.io/community"
+KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
-KOPANO_COMMUNITIE_PKG="core archiver deskapp files mattermost mdm meet smime webapp webmeetings"
+KOPANO_COMMUNITY_PKG="core archiver deskapp files mattermost mdm meet smime webapp webmeetings"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -143,17 +143,17 @@ echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 mkdir -p $KOPANO_EXTRACT2FOLDER
 
 # get packages and extract them in KOPANO_EXTRACT2FOLDER
-for pkglist in $KOPANO_COMMUNITIE_PKG
+for pkglist in $KOPANO_COMMUNITY_PKG
 do
     # packages listed here must be maintained manualy.. ( the -all versions )
     if [ "${pkglist}" = "files" ]||[ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
     then
         echo "Getting and extracting $pkglist to ${KOPANO_EXTRACT2FOLDER}. ( -all ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITIE_URL}/${pkglist}:/" | grep "${GET_OS}-all".tar.gz)" \
+        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-all".tar.gz)" \
         | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 1 -f -
     else
         echo "Getting and extracting $pkglist to ${KOPANO_EXTRACT2FOLDER}. ( -${GET_ARCH} ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITIE_URL}/${pkglist}:/" | grep "${GET_OS}-${GET_ARCH}".tar.gz)" \
+        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-${GET_ARCH}".tar.gz)" \
         | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 1 -f -
     fi
 done

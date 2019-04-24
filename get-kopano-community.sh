@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+set -euo pipefail
+IFS=$'\n\t'
 
 # Kopano Core Communtiy Packages Downloader
 #

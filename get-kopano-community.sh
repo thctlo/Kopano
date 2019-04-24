@@ -77,6 +77,7 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 # We need the lsb-release package. (space separeted).
 NEEDED_PACKAGES="lsb-release curl lynx"
 
+# TODO does not work on Ubuntu 16.04 (E: Unable to locate package lsb-release curl lynx)
 #### Program
 for NeededPackages in ${NEEDED_PACKAGES}
 do
@@ -84,7 +85,7 @@ do
     then
         echo "Please wait, running apt-get update and installing lsb-release"
         sudo apt-get update -y -q 2&>/dev/null
-        sudo apt-get install "${NeededPackages}" -y
+        #sudo apt-get install "${NeededPackages}" -y
         if [ "$?" -ge 1 ]
         then
             echo "Error detected at install of package : ${NeededPackages}"

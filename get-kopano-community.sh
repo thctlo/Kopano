@@ -109,7 +109,7 @@ GET_ARCH="$(dpkg --print-architecture)"
 ### Autobackup
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
-    mkdir backups
+    mkdir -p backups
     if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
     then
         echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
@@ -140,15 +140,7 @@ do
     fi
 done
 
-# Enter extract folder
-if [ -d $KOPANO_EXTRACT2FOLDER ]
-then
-    cd $KOPANO_EXTRACT2FOLDER || exit
-else
-    echo "Errors, something is wrong here, we should enter  $KOPANO_EXTRACT2FOLDER"
-    echo "But its not working, exiting now..."
-    exit 1
-fi
+cd $KOPANO_EXTRACT2FOLDER || exit
 
 # Create arch based folder.
 if [ "${GET_ARCH}" = "amd64" ]; then
@@ -162,8 +154,8 @@ if [ "${GET_ARCH}" = "amd64" ]; then
 fi
 # move files
 if [ "${GET_ARCH}" = "amd64" ]; then
-    mv -n ./*_amd64.deb amd64/
-    mv -n ./*_all.deb amd64/
+    mv -n ./*_amd64.deb amd64/ || true
+    mv -n ./*_all.deb amd64/ || true
     # remove left overs
     rm ./*.deb
     # remove 2 left overs from kopano-archiver
@@ -173,8 +165,8 @@ if [ "${GET_ARCH}" = "amd64" ]; then
     rm ./Release.gpg
     rm ./Release.key
 elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
-    mv -n ./*_i386.deb i386/
-    mv -n ./*_all.deb i386/
+    mv -n ./*_i386.deb i386/ || true
+    mv -n ./*_all.deb i386/ || true
     # remove left overs
     rm ./*.deb
     # remove 2 left overs from kopano-archiver
@@ -200,12 +192,11 @@ then
     echo "# to enable the webserver, install a webserver ( apache/nginx )"
     echo "# and symlink ${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ to /var/www/html/${KOPANO_EXTRACT2FOLDER}"
     } > /etc/apt/sources.list.d/kopano-community.list
-    echo "Please wait, running apt-get update"
-    apt-get update -qy 2&>/dev/null
-else
-    echo "Please wait, running apt-get update"
-    apt-get update -qy 2&>/dev/null
 fi
+
+echo "Please wait, running apt-get update"
+apt-get update -qy 2&>/dev/null
+
 echo " "
 echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/kopano-community.list"
 echo " "
@@ -220,7 +211,7 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
             {
             echo "# "
             echo "# Kopano z-push repo"
-            echo "# Documantation: https://wiki.z-hub.io/display/ZP/Installation"
+            echo "# Documentation: https://wiki.z-hub.io/display/ZP/Installation"
             echo "# https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
             echo "# https://documentation.kopano.io/user_manual_kopanocore/configure_mobile_devices.html"
             echo "# Options to set are :"
@@ -260,7 +251,7 @@ if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
                 {
                 echo "# "
                 echo "# Kopano LibreOffice Online repo"
-                echo "# Documantation: https://documentation.kopano.io/kopano_loo-documentseditor/"
+                echo "# Documentation: https://documentation.kopano.io/kopano_loo-documentseditor/"
                 echo "# "
                 echo "deb ${SET_OFFICE_ONLINE_REPO}"
                 } > /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}"

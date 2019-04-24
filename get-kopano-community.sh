@@ -122,19 +122,12 @@ GET_ARCH="$(dpkg --print-architecture)"
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
     mkdir backups
-    if [ ! -d "${GET_ARCH}-$(date +%F)" ]
+    if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
     then
-        if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
-        then
-            echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
-            # we move the previous version.
-            mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
-        fi
+        echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
+        # we move the previous version.
+        mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
     fi
-else
-    echo "Error, $BASE_FOLDER was not available, possible first time this is running."
-    echo "We will skip the autobackup since there is noting to backup."
-fi
 
 ### Core start
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"

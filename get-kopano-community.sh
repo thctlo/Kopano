@@ -22,6 +22,7 @@ set -euo pipefail
 # Updates 1.4, 2019-02-15, added autobackup
 # Updates 1.4.1, 2019-02-15, few small fixes
 # Updates 1.4.2, 2019-02-18, added sudo/root check.
+# Updates 1.5.0, 2019-04-24, simplify a few bits
 
 # Sources used:
 # https://download.kopano.io/community/

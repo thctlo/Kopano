@@ -68,11 +68,11 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 
 ################################################################################
 ##### Needed for this program.
-if ! [[ $EUID -eq 0 ]]
-then
-    echo "This script should be run using sudo or by root."
-    exit 1
-fi
+#if ! [[ $EUID -eq 0 ]]
+#then
+#    echo "This script should be run using sudo or by root."
+#    exit 1
+#fi
 
 # We need the lsb-release package. (space separeted).
 NEEDED_PACKAGES="lsb-release curl lynx"
@@ -83,8 +83,8 @@ do
     if [ "$(dpkg -l "$NeededPackages" | grep -c 'ii')" -eq 0 ]
     then
         echo "Please wait, running apt-get update and installing lsb-release"
-        apt-get update -y -q 2&>/dev/null
-        apt-get install "${NeededPackages}" -y
+        sudo apt-get update -y -q 2&>/dev/null
+        sudo apt-get install "${NeededPackages}" -y
         if [ "$?" -ge 1 ]
         then
             echo "Error detected at install of package : ${NeededPackages}"

@@ -140,10 +140,7 @@ fi
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 
 # Create extract to folders, needed for then next part. get packages.
-if [ ! -d $KOPANO_EXTRACT2FOLDER ]
-then
-    mkdir $KOPANO_EXTRACT2FOLDER
-fi
+mkdir -p $KOPANO_EXTRACT2FOLDER
 
 # get packages and extract them in KOPANO_EXTRACT2FOLDER
 for pkglist in $KOPANO_COMMUNITIE_PKG

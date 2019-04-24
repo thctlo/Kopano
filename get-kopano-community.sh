@@ -68,12 +68,6 @@ ENABLE_Z_PUSH_REPO="yes"
 ENABLE_LIBREOFFICE_ONLINE="yes"
 
 ################################################################################
-##### Needed for this program.
-#if ! [[ $EUID -eq 0 ]]
-#then
-#    echo "This script should be run using sudo or by root."
-#    exit 1
-#fi
 
 # dependencies for this script:
 NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gpg2 lynx sudo tee"

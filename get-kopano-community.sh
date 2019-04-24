@@ -74,8 +74,9 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 #    exit 1
 #fi
 
-# We need the lsb-release package
+# dependencies for this script:
 NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gpg2 lynx sudo tee"
+# the above packages can be installed with executing `apt install apt-transport-https lsb-release apt-utils curl gnupg2 lynx sudo`
 
 #### Program
 for var in $NEEDED_PROGRAMS; do
@@ -179,7 +180,7 @@ elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
 fi
 
 # Create the Packages file so apt knows what to get.
-echo "Please wait, generating  ${GET_ARCH}/Packages File"
+echo "Please wait, generating ${GET_ARCH}/Packages File"
 apt-ftparchive packages "${GET_ARCH}"/ > "${GET_ARCH}"/Packages
 
 
@@ -266,7 +267,7 @@ fi
 ### LibreOffice Online End
 
 echo "Please wait, running apt-get update"
-sudo apt-get update -qy 2&>/dev/null
+sudo apt-get update -qy
 
 echo "Kopano core versions available on the repo now are: "
 apt-cache policy kopano-server-packages

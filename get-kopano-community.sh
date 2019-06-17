@@ -25,6 +25,7 @@ set -euo pipefail
 # Updates 1.4.2, 2019-02-18, added sudo/root check.
 # Updates 1.5.0, 2019-04-24, simplify a few bits
 # Updates 1.5.1, 2019-04-29, fix incorrect gpg2 package name to gnupg2
+# Updates 1.5.2, 2019-06-17, fix incorrect gnupg/gpg2 detection. package name/command did not match.
 
 # Sources used:
 # https://download.kopano.io/community/
@@ -73,9 +74,12 @@ ENABLE_LIBREOFFICE_ONLINE="yes"
 # dependencies for this script:
 NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx sudo tee"
 # the above packages can be installed with executing `apt install apt-transport-https lsb-release apt-utils curl gnupg2 lynx sudo`
+# Note gnupg2 is using the command gpg2.
 
 #### Program
 for var in $NEEDED_PROGRAMS; do
+    # fix for 1.5.1. 
+    if var="gnupg2"; then var=gpg2; fi
     if ! command -v "$var" &> /dev/null; then
         echo "$var is missing. Please install it and rerun the script."
         exit 1

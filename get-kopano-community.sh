@@ -26,6 +26,7 @@ set -euo pipefail
 # Updates 1.5.0, 2019-04-24, simplify a few bits
 # Updates 1.5.1, 2019-04-29, fix incorrect gpg2 package name to gnupg2
 # Updates 1.5.2, 2019-06-17, fix incorrect gnupg/gpg2 detection. package name/command did not match.
+# Updates 1.6,   2019-08-18, add buster detection, as kopano change the way it shows the debian version ( removed .0)
 
 # Sources used:
 # https://download.kopano.io/community/
@@ -98,8 +99,13 @@ OSDISTVER0="$(lsb_release -sr|cut -c1).0"
 # check OS/version
 if [ "${OSNAME}" = "Debian" ]
 then
-    # Needed for Kopano Community ( used Debian_9.0 )
-    GET_OS="${OSNAME}_${OSDISTVER0}"
+    if [ "${OSDISTVER}" -eq 10 ]
+    then 
+        GET_OS="${OSNAME}_${OSDISTVER}"
+    else
+        # Needed for Kopano Community ( used Debian_9.0 )
+        GET_OS="${OSNAME}_${OSDISTVER0}"
+    fi
 elif [ "${OSNAME}" = "Ubuntu" ]
 then
     # For ubuntu results in Ubuntu_18.04

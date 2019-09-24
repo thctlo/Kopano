@@ -27,6 +27,7 @@ set -euo pipefail
 # Updates 1.5.1, 2019-04-29, fix incorrect gpg2 package name to gnupg2
 # Updates 1.5.2, 2019-06-17, fix incorrect gnupg/gpg2 detection. package name/command did not match.
 # Updates 1.6,   2019-08-18, add buster detection, as kopano change the way it shows the debian version ( removed .0)
+# Updates 1.7,   2019-09-24, Update for kopano-site changes, removed unsupported version from default settings.
 
 # Sources used:
 # https://download.kopano.io/community/
@@ -41,7 +42,7 @@ set -euo pipefail
 # Dont change the base folder once its set!
 # If you do you need to change the the file:
 #  /etc/apt/sources.list.d/local-file.list also.
-BASE_FOLDER=$HOME/kopano-repo
+BASE_FOLDER="$HOME/kopano-repo"
 
 # A subfolder in BASE_FOLDER.
 KOPANO_EXTRACT2FOLDER="apt"
@@ -54,7 +55,7 @@ ENABLE_AUTO_BACKUP="yes"
 # The Kopano Community link.
 KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
-KOPANO_COMMUNITY_PKG="core archiver deskapp files mattermost mdm meet smime webapp webmeetings"
+KOPANO_COMMUNITY_PKG="core archiver deskapp files mdm meet smime webapp"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -68,7 +69,7 @@ ENABLE_Z_PUSH_REPO="yes"
 
 # Please note, limited support, only Debian 9 is supported in the script.
 # see deb https://download.kopano.io/community/libreofficeonline/
-ENABLE_LIBREOFFICE_ONLINE="yes"
+ENABLE_LIBREOFFICE_ONLINE="no"
 
 ################################################################################
 
@@ -88,7 +89,10 @@ for var in $NEEDED_PROGRAMS; do
 done
 
 # Setup base folder en enter it.
-mkdir -p "$BASE_FOLDER"
+if [ ! -d "$BASE_FOLDER" ]
+then
+    mkdir -p "$BASE_FOLDER"
+fi
 cd "$BASE_FOLDER"
 
 # set needed variables
@@ -130,25 +134,28 @@ fi
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 
 # Create extract to folders, needed for then next part. get packages.
-mkdir -p $KOPANO_EXTRACT2FOLDER
+if [ ! -d $KOPANO_EXTRACT2FOLDER ]
+then
+    mkdir -p $KOPANO_EXTRACT2FOLDER
+fi
 
 # get packages and extract them in KOPANO_EXTRACT2FOLDER
 for pkglist in $KOPANO_COMMUNITY_PKG
 do
     # packages listed here must be maintained manualy.. ( the -all versions )
-    if [ "${pkglist}" = "files" ]||[ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
+    if [ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
     then
-        echo "Getting and extracting $pkglist to ${KOPANO_EXTRACT2FOLDER}. ( -all ) "
+        echo "Getting and extracting : $pkglist ( -all ) "
         curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-all".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 1 -f -
+        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
     else
-        echo "Getting and extracting $pkglist to ${KOPANO_EXTRACT2FOLDER}. ( -${GET_ARCH} ) "
+        echo "Getting and extracting : $pkglist ( -${GET_ARCH} ) "
         curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-${GET_ARCH}".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 1 -f -
+        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
     fi
 done
 
-cd $KOPANO_EXTRACT2FOLDER || exit
+cd $KOPANO_EXTRACT2FOLDER
 
 # Create arch based folder.
 if [ "${GET_ARCH}" = "amd64" ]; then

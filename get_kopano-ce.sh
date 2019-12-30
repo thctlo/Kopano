@@ -32,8 +32,8 @@ BACKUP_DIR="bckp"
 KOPANO_CE_URL="https://download.kopano.io/community"
 KOPANO_CE_SRCS_LIST="kopano-ce.list"
 # The packages you can pull and put directly in to the repo.
-KOPANO_CE_PKGS="core archiver deskapp files mdm smime webapp webmeetings"
-KOPANO_CE_PKGS_ARCH_ALL="files mdm webapp webmeetings"
+KOPANO_CE_PKGS="core deskapp files mdm smime webapp webmeetings"
+KOPANO_CE_PKGS_ARCH_ALL="files mdm webapp"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -65,7 +65,7 @@ function item_in_list {
 }
 
 for app in $REQUIRED_APPS; do
-    # fix for 1.5.1. 
+    # fix for 1.5.1.
     if app="gnupg2"; then app=gpg2; fi
     if ! command -v "$app" &> /dev/null; then
         echo "$app is missing. Please install it and rerun the script."
@@ -83,9 +83,15 @@ cd $BASE_DIR
 OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
 OSDISTVER="$(lsb_release -sr)"
-if [ "${OSNAME}" = "Debian" ] && [ "$(echo "${OSDISTVER}" | cut -f1 -d".")" -lt 10 ] ; then
-    # Needed for Debian <10
-    OSDISTVER="$(echo "${OSDISTVER}" | cut -f1 -d".").0"
+OSDISTVERMAIN="$(echo "${OSDISTVER}" | cut -f1 -d".")"
+if [ "${OSNAME}" = "Debian" ] ; then
+    if [ "${OSDISTVERMAIN}" -lt 10 ] ; then
+        # Needed for Debian <10
+        OSDISTVER="${OSDISTVERMAIN}.0"
+    elif [ "${OSDISTVERMAIN}" -eq 10 ] ; then
+        KOPANO_CE_PKGS="${KOPANO_CE_PKGS} dependencies"
+        KOPANO_CE_PKGS_ARCH_ALL="${KOPANO_CE_PKGS_ARCH_ALL} webmeetings"
+    fi
 fi
 GET_OS="${OSNAME}_${OSDISTVER}"
 GET_ARCH="$(dpkg --print-architecture)"

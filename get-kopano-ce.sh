@@ -2,49 +2,23 @@
 
 set -euo pipefail
 
-# Kopano Core Communtiy Packages Downloader
-#
-# By Louis van Belle
-# Tested on Debian 9 amd64, should work on Ubuntu 16.04/18.04 also.
-#
-# You run it, it get the lastest versions of Kopano and your ready to install.
-# A local file repo is create, which you can use for a webserver also.
-#
-# Use at own risk, use it, change it if needed and share it.!
+# Kopano CE Packages Downloader
+# Use at own risk, use it, change it if needed and share it.
 
-# Version 1.0, 2019 Feb 12, Added on github.
-# https://github.com/thctlo/Kopano/blob/master/get-kopano-community.sh
-#
-# Updated 1.1, 2019-02-12, added z-push repo.
-# Updated 1.2, 2019-02-12, added libreoffice online repo.
-# Updated 1.3, 2019-02-12, added check on lynx and curl
-# Updated 1.3.1, 2019-02-14, added check for failing packages at install
-# Updated Fix typos
-# Updates 1.4, 2019-02-15, added autobackup
-# Updates 1.4.1, 2019-02-15, few small fixes
-# Updates 1.4.2, 2019-02-18, added sudo/root check.
-# Updates 1.5.0, 2019-04-24, simplify a few bits
-# Updates 1.5.1, 2019-04-29, fix incorrect gpg2 package name to gnupg2
-# Updates 1.5.2, 2019-06-17, fix incorrect gnupg/gpg2 detection. package name/command did not match.
-# Updates 1.6,   2019-08-18, add buster detection, as kopano change the way it shows the debian version ( removed .0)
-# Updates 1.7,   2019-09-24, Update for kopano-site changes, removed unsupported version from default settings.
-
+# Forked from:
+# https://github.com/thctlo/Kopano.git
 # Sources used:
 # https://download.kopano.io/community/
 # https://documentation.kopano.io/kopanocore_administrator_manual
 # https://wiki.z-hub.io/display/ZP/Installation
 
 # For the quick and unpatient, keep the below defaults and run :
-# wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
+# wget -O - https://raw.githubusercontent.com/lcnittl/Kopano/master/get-kopano-ce.sh | bash
 # apt install kopano-server-packages
-# Optional, when you are upgrading: apt dist-upgrade && kopano-dbadm usmp
-#
-# Dont change the base folder once its set!
-# If you do you need to change the the file:
-#  /etc/apt/sources.list.d/local-file.list also.
-BASE_FOLDER="$HOME/kopano"
+# Optional, when you are upgrading:
+# apt dist-upgrade && kopano-dbadm usmp
 
-# A subfolder in BASE_FOLDER.
+BASE_FOLDER="$HOME/kopano"
 EXTRACT_DIR="apt"
 
 # Autobackup the previous version.

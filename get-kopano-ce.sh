@@ -42,10 +42,10 @@ set -euo pipefail
 # Dont change the base folder once its set!
 # If you do you need to change the the file:
 #  /etc/apt/sources.list.d/local-file.list also.
-BASE_FOLDER="$HOME/kopano-repo"
+BASE_FOLDER="$HOME/kopano"
 
 # A subfolder in BASE_FOLDER.
-KOPANO_EXTRACT2FOLDER="apt"
+EXTRACT_DIR="apt"
 
 # Autobackup the previous version.
 # A backup will be made of the apt/$ARCH folder to backukp/
@@ -53,9 +53,10 @@ KOPANO_EXTRACT2FOLDER="apt"
 ENABLE_AUTO_BACKUP="yes"
 
 # The Kopano Community link.
-KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
+KOPANO_CE_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
-KOPANO_COMMUNITY_PKG="core archiver deskapp files mdm meet smime webapp"
+KOPANO_CE_PKGS="core archiver deskapp files mdm smime webapp webmeetings"
+KOPANO_CE_PKGS_ARCH_ALL="files mdm webapp webmeetings"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -74,59 +75,62 @@ ENABLE_LIBREOFFICE_ONLINE="no"
 ################################################################################
 
 # dependencies for this script:
-NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx sudo tee"
-# the above packages can be installed with executing `apt install apt-transport-https lsb-release apt-utils curl gnupg2 lynx sudo`
+NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx tee"
+# the above packages can be installed with executing `apt install ${NEEDED_PROGRAMS}`
 # Note gnupg2 is using the command gpg2.
 
 #### Program
-for var in $NEEDED_PROGRAMS; do
+function item_in_list {
+    local item="$1"
+    local list="$2"
+
+    return $([[ $list =~ (^|[[:space:]])"$item"([[:space:]]|$) ]])
+}
+
+for program in $NEEDED_PROGRAMS; do
     # fix for 1.5.1. 
-    if var="gnupg2"; then var=gpg2; fi
-    if ! command -v "$var" &> /dev/null; then
-        echo "$var is missing. Please install it and rerun the script."
+    if program="gnupg2"; then program=gpg2; fi
+    if ! command -v "$program" &> /dev/null; then
+        echo "$program is missing. Please install it and rerun the script."
         exit 1
     fi
 done
 
 # Setup base folder en enter it.
-if [ ! -d "$BASE_FOLDER" ]
-then
-    mkdir -p "$BASE_FOLDER"
+if [ ! -d $BASE_FOLDER ] ; then
+    mkdir $BASE_FOLDER
 fi
-cd "$BASE_FOLDER"
+cd $BASE_FOLDER
 
 # set needed variables
 OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
-OSDISTVER="$(lsb_release -sr)"
-OSDISTVER0="$(lsb_release -sr|cut -c1).0"
-# check OS/version
-if [ "${OSNAME}" = "Debian" ]
-then
-    if [ "${OSDISTVER}" -eq 10 ]
-    then 
-        GET_OS="${OSNAME}_${OSDISTVER}"
-    else
-        # Needed for Kopano Community ( used Debian_9.0 )
-        GET_OS="${OSNAME}_${OSDISTVER0}"
-    fi
-elif [ "${OSNAME}" = "Ubuntu" ]
-then
-    # For ubuntu results in Ubuntu_18.04
-    GET_OS="${OSNAME}_${OSDISTVER}"
+if [ "${OSNAME}" = "Debian" ] && [ ! "${OSDIST}" = "buster" ] ; then
+    # Needed for Debian <10
+    OSDISTVER="$(lsb_release -sr|cut -c1).0"
+else
+    OSDISTVER="$(lsb_release -sr)"
 fi
+GET_OS="${OSNAME}_${OSDISTVER}"
 GET_ARCH="$(dpkg --print-architecture)"
+if [ "${GET_ARCH}" = "i686" ] ; then
+    GET_ARCH_RED="i386"
+else
+    GET_ARCH_RED=${GET_ARCH}
+fi
 
 # TODO this block does not really make sense, rewrite it so that if moves artifacts from previous runs in a more compact way
 ### Autobackup
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
-    mkdir -p backups
-    if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
+    if [ ! -d "bckp" ] ; then
+        mkdir -p bckp
+    fi
+    if [ -d "${EXTRACT_DIR}/${GET_ARCH_RED}" ]
     then
-        echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
+        echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH_RED}-$(date +%F)"
         # we move the previous version.
-        mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
+        mv "${EXTRACT_DIR}/${GET_ARCH_RED}" bckp/"${OSDIST}-${GET_ARCH_RED}-$(date +%F)"
     fi
 fi
 
@@ -134,92 +138,53 @@ fi
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 
 # Create extract to folders, needed for then next part. get packages.
-if [ ! -d $KOPANO_EXTRACT2FOLDER ]
-then
-    mkdir -p $KOPANO_EXTRACT2FOLDER
+if [ ! -d "${EXTRACT_DIR}/${GET_ARCH_RED}" ] ; then
+    mkdir -p $EXTRACT_DIR/$GET_ARCH_RED
 fi
 
 # get packages and extract them in KOPANO_EXTRACT2FOLDER
-for pkglist in $KOPANO_COMMUNITY_PKG
-do
-    # packages listed here must be maintained manualy.. ( the -all versions )
-    if [ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
-    then
-        echo "Getting and extracting : $pkglist ( -all ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-all".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
+for pkg in $KOPANO_CE_PKGS ; do
+    if item_in_list "${pkg}" "${KOPANO_CE_PKGS_ARCH_ALL}" ; then
+        PKG_ARCH="all"
     else
-        echo "Getting and extracting : $pkglist ( -${GET_ARCH} ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-${GET_ARCH}".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
+        PKG_ARCH=${GET_ARCH}
     fi
+    echo "Getting and extracting $pkg ( ${GET_OS}-${PKG_ARCH} ) to ${EXTRACT_DIR}."
+    curl -q -L $(lynx -listonly -nonumbers -dump "${KOPANO_CE_URL}/${pkg}:/" | grep "${GET_OS}-${PKG_ARCH}".tar.gz) \
+    | tar -xz -C ${EXTRACT_DIR}/${GET_ARCH_RED} --strip-components=1 --wildcards "*.deb" -f -
 done
 
-cd $KOPANO_EXTRACT2FOLDER
-
-# Create arch based folder.
-if [ "${GET_ARCH}" = "amd64" ]; then
-    if [ ! -d amd64 ]; then
-        mkdir amd64
-    elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
-        if [ ! -d i386 ]; then
-            mkdir i386
-        fi
-    fi
-fi
-# move files
-if [ "${GET_ARCH}" = "amd64" ]; then
-    mv -n ./*_amd64.deb amd64/ || true
-    mv -n ./*_all.deb amd64/ || true
-    # remove left overs
-    rm ./*.deb
-    # remove 2 left overs from kopano-archiver
-    rm ./Packages
-    rm ./Packages.gz
-    rm ./Release
-    rm ./Release.gpg
-    rm ./Release.key
-elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
-    mv -n ./*_i386.deb i386/ || true
-    mv -n ./*_all.deb i386/ || true
-    # remove left overs
-    rm ./*.deb
-    # remove 2 left overs from kopano-archiver
-    rm ./Packages
-    rm ./Packages.gz
-    rm ./Release
-    rm ./Release.gpg
-    rm ./Release.key
-fi
+cd $EXTRACT_DIR
 
 # Create the Packages file so apt knows what to get.
-echo "Please wait, generating ${GET_ARCH}/Packages File"
-apt-ftparchive packages "${GET_ARCH}"/ > "${GET_ARCH}"/Packages
+read -p "Create a local apt repo from the dowloaded packages? [Y/n] " RESP
+RESP=${RESP:-y}
+if [ "$RESP" = "y" ] ; then
+        echo "Please wait, generating ${GET_ARCH}/Packages File"
+        apt-ftparchive packages "${GET_ARCH_RED}"/ > "${GET_ARCH_RED}"/Packages
 
-
-if [ ! -e /etc/apt/sources.list.d/kopano-community.list ]
-then
     {
-    echo "# File setup for Kopano Community."
-    echo "deb [trusted=yes] file:${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ ${GET_ARCH}/"
-    echo "# Webserver setup for Kopano Community."
-    echo "#deb [trusted=yes] http://localhost/apt ${GET_ARCH}/"
-    echo "# to enable the webserver, install a webserver ( apache/nginx )"
-    echo "# and symlink ${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ to /var/www/html/${KOPANO_EXTRACT2FOLDER}"
-    } | sudo tee /etc/apt/sources.list.d/kopano-community.list > /dev/null
+        echo "# file repo format"
+        echo "deb [trusted=yes] file://${BASE_FOLDER}/${EXTRACT_DIR} ${GET_ARCH_RED}/"
+        echo "# webserver format"
+        echo "#deb [trusted=yes] http://localhost/apt ${GET_ARCH_RED}/"
+        echo "# to enable the webserver, install a webserver ( apache/nginx )"
+        echo "# and symlink ${BASE_FOLDER}/${EXTRACT_DIR}/ to /var/www/html/${EXTRACT_DIR}"
+    } | tee /etc/apt/sources.list.d/kopano-ce.list > /dev/null
+
+    echo
+    echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/kopano-ce.list"
+    echo
 fi
 
-echo " "
-echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/kopano-community.list"
-echo " "
 ### Core end
 ### Z-PUSH start
-if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
+if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
     SET_Z_PUSH_REPO="http://repo.z-hub.io/z-push:/final/${GET_OS} /"
     SET_Z_PUSH_FILENAME="kopano-z-push.list"
     echo "Checking for Z_PUSH Repo on ${OSNAME}."
-    if [ ! -e /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ]; then
-        if [ ! -f /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ]; then
+    if [ ! -e /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ] ; then
+        if [ ! -f /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ] ; then
             {
             echo "# "
             echo "# Kopano z-push repo"
@@ -230,14 +195,14 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
             echo "# old-final = old-stable, final = stable, pre-final=testing, develop = experimental"
             echo "# "
             echo "deb ${SET_Z_PUSH_REPO}"
-            } | sudo tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
-            echo "Created file : /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
+            } | tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
+            echo "Created file: /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
         fi
 
         # install the repo key once.
-        if [ "$(apt-key list | grep -c kopano)" -eq 0 ]; then
+        if [ "$(apt-key list | grep -c kopano)" -eq 0 ] ; then
             echo -n "Installing z-push signing key : "
-            curl -vs http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | sudo apt-key add -
+            curl -vs http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | apt-key add -
         else
             echo "The Kopano Z_PUSH repo key was already installed."
         fi
@@ -245,28 +210,28 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
         echo "The Kopano Z_PUSH repo was already setup."
         echo ""
     fi
-    echo "The z-push info : https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
-    echo "Before you configure/install also read : https://wiki.z-hub.io/display/ZP/Installation"
+    echo "The z-push info: https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
+    echo "Before you configure/install also read: https://wiki.z-hub.io/display/ZP/Installation"
     echo ""
 fi
 ### Z_PUSH End
 
 ### LibreOffice Online start ( only tested Debian 9 )
-if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
+if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ] ; then
     if [ "$GET_OS" = "Debian_9.0" ] || [ "$GET_OS" = "Debian_8.0" ] || [ "${GET_OS}" = "Ubuntu_16.04" ]
     then
         SET_OFFICE_ONLINE_REPO="http://download.kopano.io/community/libreofficeonline/${GET_OS} /"
         SET_OFFICE_ONLINE_FILENAME="kopano-libreoffice-online.list"
         echo "Checking for Kopano LibreOffice Online Repo on ${OSNAME}."
-        if [ ! -e /etc/apt/sources.list.d/"${SET_OFFICE-ONLINE_FILENAME}" ]; then
-            if [ ! -f /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" ]; then
+        if [ ! -e /etc/apt/sources.list.d/"${SET_OFFICE-ONLINE_FILENAME}" ] ; then
+            if [ ! -f /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" ] ; then
                 {
                 echo "# "
                 echo "# Kopano LibreOffice Online repo"
                 echo "# Documentation: https://documentation.kopano.io/kopano_loo-documentseditor/"
                 echo "# "
                 echo "deb ${SET_OFFICE_ONLINE_REPO}"
-                } | sudo tee /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" > /dev/null
+                } | tee /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" > /dev/null
                 echo "Created file : /etc/apt/sources.list.d/${SET_OFFICE_ONLINE_FILENAME}"
             fi
         else
@@ -279,8 +244,8 @@ if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ]; then
 fi
 ### LibreOffice Online End
 
-echo "Please wait, running apt-get update"
-sudo apt-get update -qy
+echo "Please wait, running apt update"
+apt update -qy
 
 echo "Kopano core versions available on the repo now are: "
 apt-cache policy kopano-server-packages

@@ -153,11 +153,11 @@ fi
 ### Core end
 ### Z-PUSH start
 if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
-    SET_Z_PUSH_REPO="http://repo.z-hub.io/z-push:/final/${GET_OS} /"
-    SET_Z_PUSH_FILENAME="kopano-z-push.list"
+    Z_PUSH_REPO_URL="http://repo.z-hub.io/z-push:/final/${GET_OS} /"
+    Z_PUSH_SRCS_LIST="kopano-z-push.list"
     echo "Checking for Z_PUSH Repo on ${OSNAME}."
-    if [ ! -e /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ] ; then
-        if [ ! -f /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" ] ; then
+    if [ ! -e /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" ] ; then
+        if [ ! -f /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" ] ; then
             {
             echo "# "
             echo "# Kopano z-push repo"
@@ -167,9 +167,9 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
             echo "# Options to set are :"
             echo "# old-final = old-stable, final = stable, pre-final=testing, develop = experimental"
             echo "# "
-            echo "deb ${SET_Z_PUSH_REPO}"
-            } | tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
-            echo "Created file: /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
+            echo "deb ${Z_PUSH_REPO_URL}"
+            } | tee /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" > /dev/null
+            echo "Created file: /etc/apt/sources.list.d/${Z_PUSH_SRCS_LIST}"
         fi
     else
         echo "The Kopano Z_PUSH repo was already setup."

@@ -198,18 +198,19 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
             } | tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
             echo "Created file: /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
         fi
-
-        # install the repo key once.
-        if [ "$(apt-key list | grep -c kopano)" -eq 0 ] ; then
-            echo -n "Installing z-push signing key : "
-            curl -vs http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | apt-key add -
-        else
-            echo "The Kopano Z_PUSH repo key was already installed."
-        fi
     else
         echo "The Kopano Z_PUSH repo was already setup."
         echo ""
     fi
+
+    # install the repo key once.
+    if [ "$(apt-key list 2> /dev/null | grep -c kopano)" -eq 0 ] ; then
+        echo -n "Installing z-push signing key : "
+        curl -q -L http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | apt-key add -
+    else
+        echo "The Kopano Z_PUSH repo key was already installed."
+    fi
+
     echo "The z-push info: https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
     echo "Before you configure/install also read: https://wiki.z-hub.io/display/ZP/Installation"
     echo ""

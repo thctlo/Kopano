@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+shopt -s nocasematch
 
 # Kopano CE Packages Downloader
 # Use at own risk, use it, change it if needed and share it.
@@ -81,11 +82,10 @@ cd $BASE_DIR
 # set needed variables
 OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
-if [ "${OSNAME}" = "Debian" ] && [ ! "${OSDIST}" = "buster" ] ; then
+OSDISTVER="$(lsb_release -sr)"
+if [ "${OSNAME}" = "Debian" ] && [ "$(echo "${OSDISTVER}" | cut -f1 -d".")" -lt 10 ] ; then
     # Needed for Debian <10
-    OSDISTVER="$(lsb_release -sr|cut -c1).0"
-else
-    OSDISTVER="$(lsb_release -sr)"
+    OSDISTVER="$(echo "${OSDISTVER}" | cut -f1 -d".").0"
 fi
 GET_OS="${OSNAME}_${OSDISTVER}"
 GET_ARCH="$(dpkg --print-architecture)"
@@ -132,12 +132,17 @@ done
 cd $EXTRACT_DIR
 
 # Create the Packages file so apt knows what to get.
-read -p "Create a local apt repo from the dowloaded packages? [Y/n] " RESP
-RESP=${RESP:-y}
-if [ "$RESP" = "y" ] ; then
-        echo "Please wait, generating ${GET_ARCH}/Packages File"
-        apt-ftparchive packages "${GET_ARCH_RED}"/ > "${GET_ARCH_RED}"/Packages
+echo "Please wait, generating ${GET_ARCH}/Packages File"
+apt-ftparchive packages "${GET_ARCH_RED}"/ > "${GET_ARCH_RED}"/Packages
 
+if [ -e /etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST} ] ; then
+    EXISTS_KOPANO_SRCS_LIST=1
+    read -p "Overwrite existing sources list file '/etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST}'? [y/N] " RESP
+    RESP=${RESP:-n}
+else
+    EXISTS_KOPANO_SRCS_LIST=0
+fi
+if [[ $RESP =~ y(es)? || $EXISTS_KOPANO_SRCS_LIST == 0 ]] ; then
     {
         echo "# file repo format"
         echo "deb [trusted=yes] file://${BASE_DIR}/${EXTRACT_DIR} ${GET_ARCH_RED}/"
@@ -147,18 +152,28 @@ if [ "$RESP" = "y" ] ; then
         echo "# and symlink ${BASE_DIR}/${EXTRACT_DIR}/ to /var/www/html/${EXTRACT_DIR}"
     } | tee /etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST} > /dev/null
 
-    echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST}"
+    echo "Created source list: '/etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST}'."
+else
+    echo "Did not overwrite existing source list '${KOPANO_CE_SRCS_LIST}'."
 fi
-
+unset RESP
 ### Core end
+
 ### Z-PUSH start
 if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
     Z_PUSH_REPO_URL="http://repo.z-hub.io/z-push:/final/${GET_OS} /"
     Z_PUSH_SRCS_LIST="kopano-z-push.list"
     echo "Checking for Z_PUSH Repo on ${OSNAME}."
-    if [ ! -e /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" ] ; then
-        if [ ! -f /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" ] ; then
-            {
+
+    if [ -e /etc/apt/sources.list.d/${Z_PUSH_SRCS_LIST} ] ; then
+        EXISTS_Z_PUSH_SRCS_LIST=1
+        read -p "Overwrite existing sources list file '/etc/apt/sources.list.d/${Z_PUSH_SRCS_LIST}'? [y/N] " RESP
+        RESP=${RESP:-n}
+    else
+        EXISTS_Z_PUSH_SRCS_LIST=0
+    fi
+    if [[ $RESP =~ y(es)? || $EXISTS_Z_PUSH_SRCS_LIST == 0 ]] ; then
+        {
             echo "# "
             echo "# Kopano z-push repo"
             echo "# Documentation: https://wiki.z-hub.io/display/ZP/Installation"
@@ -168,15 +183,13 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
             echo "# old-final = old-stable, final = stable, pre-final=testing, develop = experimental"
             echo "# "
             echo "deb ${Z_PUSH_REPO_URL}"
-            } | tee /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" > /dev/null
-            echo "Created file: /etc/apt/sources.list.d/${Z_PUSH_SRCS_LIST}"
-        fi
+        } | tee /etc/apt/sources.list.d/"${Z_PUSH_SRCS_LIST}" > /dev/null
+        echo "Created source list: '/etc/apt/sources.list.d/${Z_PUSH_SRCS_LIST}'."
     else
-        echo "The Kopano Z_PUSH repo was already setup."
-        echo
+        echo "Did not overwrite existing source list '${Z_PUSH_SRCS_LIST}'."
     fi
 
-    # install the repo key once.
+    # install the repo key if it does not exist.
     if [ "$(apt-key list 2> /dev/null | grep -c kopano)" -eq 0 ] ; then
         echo -n "Installing z-push signing key : "
         curl -q -L http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | apt-key add -
@@ -187,6 +200,7 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
     echo "The z-push info: https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
     echo "Before you configure/install also read: https://wiki.z-hub.io/display/ZP/Installation"
 fi
+unset RESP
 ### Z_PUSH End
 
 ### LibreOffice Online start ( only tested Debian 9 )

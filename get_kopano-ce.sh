@@ -18,39 +18,41 @@ set -euo pipefail
 # Optional, when you are upgrading:
 # apt dist-upgrade && kopano-dbadm usmp
 
-BASE_FOLDER="$HOME/kopano"
+BASE_DIR="$HOME/kopano"
 EXTRACT_DIR="apt"
 
 # Autobackup the previous version.
-# A backup will be made of the apt/$ARCH folder to backukp/
-# The backup path is relative to the BASE_FOLDER.
+# A backup will be made of the $BASE_DIR/$EXTRACT_DIR/$GET_ARCH_RED folder to $BASE_DIR/$BACKUP_DIR
+# The backup path is relative to the BASE_DIR.
 ENABLE_AUTO_BACKUP="yes"
+BACKUP_DIR="bckp"
 
 # The Kopano Community link.
 KOPANO_CE_URL="https://download.kopano.io/community"
+KOPANO_CE_SRCS_LIST="kopano-ce.list"
 # The packages you can pull and put directly in to the repo.
 KOPANO_CE_PKGS="core archiver deskapp files mdm smime webapp webmeetings"
 KOPANO_CE_PKGS_ARCH_ALL="files mdm webapp webmeetings"
 
 # TODO
 # make function for regular .tar.gz files like :
-# kapp konnect kweb libkcoidc mattermost-plugin-kopanowebmeetings
-# mattermost-plugin-notifymatters
+# kapp konnect kweb libkcoidc mattermost-plugin-kopanowebmeetings mattermost-plugin-notifymatters
 
 # If you want z-push available also in your apt, set this to yes.
 # z-push repo stages.
-# After the setup, its explained in the repo filo.
+# After the setup, its explained in the repo file.
 ENABLE_Z_PUSH_REPO="yes"
 
 # Please note, limited support, only Debian 9 is supported in the script.
 # see deb https://download.kopano.io/community/libreofficeonline/
 ENABLE_LIBREOFFICE_ONLINE="no"
+LOO_SUPPORTED_OSS="Debian_8.0 Debian_9.0 Ubuntu_16.04"
 
 ################################################################################
 
 # dependencies for this script:
-NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx tee"
-# the above packages can be installed with executing `apt install ${NEEDED_PROGRAMS}`
+REQUIRED_APPS="lsb_release apt-ftparchive curl gnupg2 lynx tee"
+# the above packages can be installed with executing `apt install ${REQUIRED_APPS}`
 # Note gnupg2 is using the command gpg2.
 
 #### Program
@@ -61,20 +63,20 @@ function item_in_list {
     return $([[ $list =~ (^|[[:space:]])"$item"([[:space:]]|$) ]])
 }
 
-for program in $NEEDED_PROGRAMS; do
+for app in $REQUIRED_APPS; do
     # fix for 1.5.1. 
-    if program="gnupg2"; then program=gpg2; fi
-    if ! command -v "$program" &> /dev/null; then
-        echo "$program is missing. Please install it and rerun the script."
+    if app="gnupg2"; then app=gpg2; fi
+    if ! command -v "$app" &> /dev/null; then
+        echo "$app is missing. Please install it and rerun the script."
         exit 1
     fi
 done
 
 # Setup base folder en enter it.
-if [ ! -d $BASE_FOLDER ] ; then
-    mkdir $BASE_FOLDER
+if [ ! -d $BASE_DIR ] ; then
+    mkdir $BASE_DIR
 fi
-cd $BASE_FOLDER
+cd $BASE_DIR
 
 # set needed variables
 OSNAME="$(lsb_release -si)"
@@ -97,11 +99,10 @@ fi
 ### Autobackup
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
-    if [ ! -d "bckp" ] ; then
-        mkdir -p bckp
+    if [ ! -d "$BACKUP_DIR" ] ; then
+        mkdir -p $BACKUP_DIR
     fi
-    if [ -d "${EXTRACT_DIR}/${GET_ARCH_RED}" ]
-    then
+    if [ -d "${EXTRACT_DIR}/${GET_ARCH_RED}" ] ; then
         echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH_RED}-$(date +%F)"
         # we move the previous version.
         mv "${EXTRACT_DIR}/${GET_ARCH_RED}" bckp/"${OSDIST}-${GET_ARCH_RED}-$(date +%F)"
@@ -139,16 +140,14 @@ if [ "$RESP" = "y" ] ; then
 
     {
         echo "# file repo format"
-        echo "deb [trusted=yes] file://${BASE_FOLDER}/${EXTRACT_DIR} ${GET_ARCH_RED}/"
+        echo "deb [trusted=yes] file://${BASE_DIR}/${EXTRACT_DIR} ${GET_ARCH_RED}/"
         echo "# webserver format"
         echo "#deb [trusted=yes] http://localhost/apt ${GET_ARCH_RED}/"
         echo "# to enable the webserver, install a webserver ( apache/nginx )"
-        echo "# and symlink ${BASE_FOLDER}/${EXTRACT_DIR}/ to /var/www/html/${EXTRACT_DIR}"
-    } | tee /etc/apt/sources.list.d/kopano-ce.list > /dev/null
+        echo "# and symlink ${BASE_DIR}/${EXTRACT_DIR}/ to /var/www/html/${EXTRACT_DIR}"
+    } | tee /etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST} > /dev/null
 
-    echo
-    echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/kopano-ce.list"
-    echo
+    echo "The installed Kopano CORE apt-list file: /etc/apt/sources.list.d/${KOPANO_CE_SRCS_LIST}"
 fi
 
 ### Core end
@@ -174,7 +173,7 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
         fi
     else
         echo "The Kopano Z_PUSH repo was already setup."
-        echo ""
+        echo
     fi
 
     # install the repo key once.
@@ -187,44 +186,43 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ] ; then
 
     echo "The z-push info: https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
     echo "Before you configure/install also read: https://wiki.z-hub.io/display/ZP/Installation"
-    echo ""
 fi
 ### Z_PUSH End
 
 ### LibreOffice Online start ( only tested Debian 9 )
 if [ "${ENABLE_LIBREOFFICE_ONLINE}" = "yes" ] ; then
-    if [ "$GET_OS" = "Debian_9.0" ] || [ "$GET_OS" = "Debian_8.0" ] || [ "${GET_OS}" = "Ubuntu_16.04" ]
-    then
-        SET_OFFICE_ONLINE_REPO="http://download.kopano.io/community/libreofficeonline/${GET_OS} /"
-        SET_OFFICE_ONLINE_FILENAME="kopano-libreoffice-online.list"
+    if item_in_list "${GET_OS}" "${LOO_SUPPORTED_OSS}" ; then
+        KOPANO_LOO_URL="http://download.kopano.io/community/libreofficeonline/${GET_OS} /"
+        KOPANO_LOO_SRCS_LIST="kopano-libreoffice-online.list"
         echo "Checking for Kopano LibreOffice Online Repo on ${OSNAME}."
-        if [ ! -e /etc/apt/sources.list.d/"${SET_OFFICE-ONLINE_FILENAME}" ] ; then
-            if [ ! -f /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" ] ; then
+        if [ ! -e /etc/apt/sources.list.d/"${KOPANO_LOO_SRCS_LIST}" ] ; then
+            if [ ! -f /etc/apt/sources.list.d/"${KOPANO_LOO_SRCS_LIST}" ] ; then
                 {
-                echo "# "
-                echo "# Kopano LibreOffice Online repo"
-                echo "# Documentation: https://documentation.kopano.io/kopano_loo-documentseditor/"
-                echo "# "
-                echo "deb ${SET_OFFICE_ONLINE_REPO}"
-                } | tee /etc/apt/sources.list.d/"${SET_OFFICE_ONLINE_FILENAME}" > /dev/null
-                echo "Created file : /etc/apt/sources.list.d/${SET_OFFICE_ONLINE_FILENAME}"
+                    echo "# "
+                    echo "# Kopano LibreOffice Online repo"
+                    echo "# Documentation: https://documentation.kopano.io/kopano_loo-documentseditor/"
+                    echo "# "
+                    echo "deb ${KOPANO_LOO_URL}"
+                } | tee /etc/apt/sources.list.d/"${KOPANO_LOO_SRCS_LIST}" > /dev/null
+                echo "Created file : /etc/apt/sources.list.d/${KOPANO_LOO_SRCS_LIST}"
             fi
         else
             echo "The Kopano LibreOffice Online repo was already setup."
-            echo ""
         fi
     else
-        echo "Sorry, Your os and/or version not supported in this script."
+        echo "Sorry, your OS and/or release are not supported in this script."
     fi
 fi
 ### LibreOffice Online End
 
+echo
 echo "Please wait, running apt update"
 apt update -qy
 
 echo "Kopano core versions available on the repo now are: "
 apt-cache policy kopano-server-packages
-echo " "
-echo " "
+
+echo
+echo
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"
 echo "The Outlook extension : https://download.kopano.io/community/olextension:/"

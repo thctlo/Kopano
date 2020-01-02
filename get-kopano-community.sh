@@ -336,3 +336,9 @@ echo " "
 echo " "
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"
 echo "The Outlook extension : https://download.kopano.io/community/olextension:/"
+echo
+echo "NOTE!"
+echo "You need to manually cleanup the Backups folder and Download folder"
+echo "I keep it because if you need/want and older version, now its available for you"
+echo
+

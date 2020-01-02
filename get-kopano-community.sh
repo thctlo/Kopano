@@ -39,7 +39,6 @@ set -euo pipefail
 
 # For the quick and unpatient, keep the below defaults and run :
 # wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
-# apt install kopano-server-packages
 # Optional, when you are upgrading: apt dist-upgrade && kopano-dbadm usmp
 #
 # Dont change the base folder once its set!

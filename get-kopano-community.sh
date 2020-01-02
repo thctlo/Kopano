@@ -5,7 +5,7 @@ set -euo pipefail
 # Kopano Core Communtiy Packages Downloader
 #
 # By Louis van Belle
-# Tested on Debian 9 amd64, should work on Ubuntu 16.04/18.04 also.
+# Tested on Debian 9/10 amd64, should work on Ubuntu 16.04/18.04 also.
 #
 # You run it, it get the lastest versions of Kopano and your ready to install.
 # A local file repo is create, which you can use for a webserver also.
@@ -28,6 +28,9 @@ set -euo pipefail
 # Updates 1.5.2, 2019-06-17, fix incorrect gnupg/gpg2 detection. package name/command did not match.
 # Updates 1.6,   2019-08-18, add buster detection, as kopano change the way it shows the debian version ( removed .0)
 # Updates 1.7,   2019-09-24, Update for kopano-site changes, removed unsupported version from default settings.
+# Happy New Year release.
+# Updated 2.0, changed path's, detections and added extra files to download.
+#
 
 # Sources used:
 # https://download.kopano.io/community/
@@ -45,7 +48,8 @@ set -euo pipefail
 BASE_FOLDER="$HOME/kopano-repo"
 
 # A subfolder in BASE_FOLDER.
-KOPANO_EXTRACT2FOLDER="apt"
+KOPANO_APTFOLDER="apt"
+KOPANO_DOWNL2FOLDER="downloads"
 
 # Autobackup the previous version.
 # A backup will be made of the apt/$ARCH folder to backukp/
@@ -55,7 +59,7 @@ ENABLE_AUTO_BACKUP="yes"
 # The Kopano Community link.
 KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
-KOPANO_COMMUNITY_PKG="core archiver deskapp files mdm meet smime webapp"
+KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp dependencies"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -80,7 +84,7 @@ NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx sudo tee"
 
 #### Program
 for var in $NEEDED_PROGRAMS; do
-    # fix for 1.5.1. 
+    # fix for 1.5.1.
     if var="gnupg2"; then var=gpg2; fi
     if ! command -v "$var" &> /dev/null; then
         echo "$var is missing. Please install it and rerun the script."
@@ -93,18 +97,18 @@ if [ ! -d "$BASE_FOLDER" ]
 then
     mkdir -p "$BASE_FOLDER"
 fi
-cd "$BASE_FOLDER"
 
 # set needed variables
 OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
 OSDISTVER="$(lsb_release -sr)"
 OSDISTVER0="$(lsb_release -sr|cut -c1).0"
+
 # check OS/version
 if [ "${OSNAME}" = "Debian" ]
 then
     if [ "${OSDISTVER}" -eq 10 ]
-    then 
+    then
         GET_OS="${OSNAME}_${OSDISTVER}"
     else
         # Needed for Kopano Community ( used Debian_9.0 )
@@ -121,91 +125,135 @@ GET_ARCH="$(dpkg --print-architecture)"
 ### Autobackup
 if [ "${ENABLE_AUTO_BACKUP}" = "yes" ]
 then
-    mkdir -p backups
-    if [ -d "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" ]
+    if [ ! -d ${BASE_FOLDER}/backups ]
+    then
+        mkdir -p ${BASE_FOLDER}/backups
+    fi
+    if [ -d "${KOPANO_APTFOLDER}/${GET_ARCH}" ]
     then
         echo "Moving previous version to : backups/${OSDIST}-${GET_ARCH}-$(date +%F)"
         # we move the previous version.
-        mv "${KOPANO_EXTRACT2FOLDER}/${GET_ARCH}" backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
+        mv "${KOPANO_APTFOLDER}/${GET_ARCH}" ${BASE_FOLDER}/backups/"${OSDIST}-${GET_ARCH}-$(date +%F)"
     fi
 fi
+
+# Change to the base folders where we put everything.
+cd "$BASE_FOLDER"
 
 ### Core start
 echo "Getting Kopano for $OSDIST: $GET_OS $GET_ARCH"
 
-# Create extract to folders, needed for then next part. get packages.
-if [ ! -d $KOPANO_EXTRACT2FOLDER ]
+# Create extract to folders, which is you apt files location.
+if [ ! -d $KOPANO_APTFOLDER ]
 then
-    mkdir -p $KOPANO_EXTRACT2FOLDER
+    mkdir -p $KOPANO_APTFOLDER
+fi
+# Create download folder
+if [ ! -d $KOPANO_DOWNL2FOLDER ]
+then
+    mkdir -p $KOPANO_DOWNL2FOLDER
 fi
 
-# get packages and extract them in KOPANO_EXTRACT2FOLDER
+# get packages and extract them in KOPANO_APTFOLDER
+echo "Downloading .tar.gz files to $BASE_FOLDER/$KOPANO_DOWNL2FOLDER"
 for pkglist in $KOPANO_COMMUNITY_PKG
 do
     # packages listed here must be maintained manualy.. ( the -all versions )
-    if [ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]
+    if [ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]||[ "${pkglist}" = "files" ]
     then
-        echo "Getting and extracting : $pkglist ( -all ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-all".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
+        if [ ! -f ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz ]
+        then
+            echo "Downloading files to ${KOPANO_DOWNL2FOLDER} folder : $pkglist ( -all ) "
+            curl -o ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}"| grep all.tar.gz)"
+
+        else
+            echo "Already downloaded : ${pkglist}, skipping"
+        fi
     else
-        echo "Getting and extracting : $pkglist ( -${GET_ARCH} ) "
-        curl -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}-${GET_ARCH}".tar.gz)" \
-        | tar -xz -C ${KOPANO_EXTRACT2FOLDER} --strip-components 2 -f -
+        # Arch specific packages.
+        if [ ! -f ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz ]
+        then
+            echo "Getting and extracting : $pkglist ( -${GET_ARCH} ) "
+            echo "Downloading files to ${KOPANO_DOWNL2FOLDER} folder : $pkglist  ( -${GET_ARCH} )"
+            curl -o ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}" |grep "${GET_ARCH}".tar.gz)"
+        else
+            echo "Already downloaded : ${pkglist}, skipping"
+        fi
     fi
 done
 
-cd $KOPANO_EXTRACT2FOLDER
+if [ ! -d tmp-extract ]
+then
+    mkdir tmp-extract
+fi
+
+for pkglist in $KOPANO_COMMUNITY_PKG
+do
+#    # packages listed here must be maintained manualy.. ( the -all versions )
+    if [ "${pkglist}" = "dependencies" ]
+    then
+        echo "Extracting (strip1) ${pkglist} to tmp-extract folder, please wait"
+        tar -xz -C tmp-extract --strip-components 2 -f ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz
+    else
+        echo "Extracting (strip2) ${pkglist} to tmp-extract folder, please wait"
+        tar -xz -C tmp-extract --strip-components 1 -f ${KOPANO_DOWNL2FOLDER}/${pkglist}-$(date +%F).tar.gz
+    fi
+done
 
 # Create arch based folder.
 if [ "${GET_ARCH}" = "amd64" ]; then
-    if [ ! -d amd64 ]; then
-        mkdir amd64
+    if [ ! -d "$BASE_FOLDER/$KOPANO_APTFOLDER"/amd64 ]; then
+        mkdir "$BASE_FOLDER/$KOPANO_APTFOLDER"/amd64
     elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
-        if [ ! -d i386 ]; then
-            mkdir i386
+        if [ ! -d "$BASE_FOLDER/$KOPANO_APTFOLDER"/i386 ]; then
+            mkdir "$BASE_FOLDER/$KOPANO_APTFOLDER"/i386
         fi
     fi
 fi
-# move files
+
+# Move files and cleanup temp folder.
+cd "$BASE_FOLDER/tmp-extract"
 if [ "${GET_ARCH}" = "amd64" ]; then
-    mv -n ./*_amd64.deb amd64/ || true
-    mv -n ./*_all.deb amd64/ || true
+    mv -n ./*_amd64.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/amd64/ || true
+    mv -n ./*_all.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/amd64/ || true
     # remove left overs
-    rm ./*.deb
-    # remove 2 left overs from kopano-archiver
+    rm -f ./*.deb
     rm ./Packages
     rm ./Packages.gz
     rm ./Release
     rm ./Release.gpg
     rm ./Release.key
+    rm ./amd64/*.deb
+    rmdir amd64
+
 elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
-    mv -n ./*_i386.deb i386/ || true
-    mv -n ./*_all.deb i386/ || true
+    mv -n ./*_i386.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/i386/ || true
+    mv -n ./*_all.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/i386/ || true
     # remove left overs
-    rm ./*.deb
-    # remove 2 left overs from kopano-archiver
+    rm -f  ./*.deb
     rm ./Packages
     rm ./Packages.gz
     rm ./Release
     rm ./Release.gpg
     rm ./Release.key
+    rm ./i386/*.deb
+    rmdir i386
 fi
 
-# Create the Packages file so apt knows what to get.
+# Enter the APT folder and Create the Arch Depended Packages file so apt knows what to get.
+cd "$BASE_FOLDER/$KOPANO_APTFOLDER/"
 echo "Please wait, generating ${GET_ARCH}/Packages File"
 apt-ftparchive packages "${GET_ARCH}"/ > "${GET_ARCH}"/Packages
-
 
 if [ ! -e /etc/apt/sources.list.d/kopano-community.list ]
 then
     {
     echo "# File setup for Kopano Community."
-    echo "deb [trusted=yes] file:${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ ${GET_ARCH}/"
+    echo "deb [trusted=yes] file:${BASE_FOLDER}/${KOPANO_APTFOLDER}/ ${GET_ARCH}/"
     echo "# Webserver setup for Kopano Community."
     echo "#deb [trusted=yes] http://localhost/apt ${GET_ARCH}/"
     echo "# to enable the webserver, install a webserver ( apache/nginx )"
-    echo "# and symlink ${BASE_FOLDER}/${KOPANO_EXTRACT2FOLDER}/ to /var/www/html/${KOPANO_EXTRACT2FOLDER}"
+    echo "# and symlink ${BASE_FOLDER}/${KOPANO_APTFOLDER}/ to /var/www/html/${KOPANO_APTFOLDER}"
     } | sudo tee /etc/apt/sources.list.d/kopano-community.list > /dev/null
 fi
 
@@ -280,10 +328,10 @@ fi
 ### LibreOffice Online End
 
 echo "Please wait, running apt-get update"
-sudo apt-get update -qy
+sudo apt-get update -qqy
 
 echo "Kopano core versions available on the repo now are: "
-apt-cache policy kopano-server-packages
+apt-cache policy kopano-server
 echo " "
 echo " "
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"

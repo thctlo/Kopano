@@ -30,8 +30,8 @@ set -euo pipefail
 # Updates 1.7,   2019-09-24, Update for kopano-site changes, removed unsupported version from default settings.
 # Happy New Year release.
 # Updated 2.0, changed path's, detections and added extra files to download.
+# Updated 2.1,  2020-01-06, Fix, dont download Debian_10 dependencies on ubuntu.
 #
-
 # Sources used:
 # https://download.kopano.io/community/
 # https://documentation.kopano.io/kopanocore_administrator_manual
@@ -157,6 +157,24 @@ fi
 echo "Downloading .tar.gz files to $BASE_FOLDER/$KOPANO_DOWNL2FOLDER"
 for pkglist in $KOPANO_COMMUNITY_PKG
 do
+    if [ "${pkglist}" = "dependencies" ]
+    then
+        if [ "${GET_OS}" = "Debian_10" ]
+        then
+            if [ ! -f ${KOPANO_DOWNL2FOLDER}/${pkglist}-${GET_OS}-$(date +%F).tar.gz ]
+            then
+                echo "Downloading files to ${KOPANO_DOWNL2FOLDER} folder : $pkglist ( OS related dependencies ) "
+                curl -o ${KOPANO_DOWNL2FOLDER}/${pkglist}-${GET_OS}-$(date +%F).tar.gz -q -L "$(lynx -listonly -nonumbers -dump "${KOPANO_COMMUNITY_URL}/${pkglist}:/" | grep "${GET_OS}"| grep tar.gz)"
+            else
+                echo "Already downloaded : ${pkglist}-${GET_OS}, skipping"
+            fi
+        else
+            echo "Not downloading dependencies, only needed for Debian_10."
+            echo "Things might change by Kopano, if needed verify with this link:"
+            echo "https://download.kopano.io/community/dependencies:/"
+        fi
+    fi
+
     # packages listed here must be maintained manualy.. ( the -all versions )
     if [ "${pkglist}" = "mdm" ]||[ "${pkglist}" = "webapp" ]||[ "${pkglist}" = "files" ]
     then

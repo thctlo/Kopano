@@ -23,6 +23,11 @@ Kopano is fast moving at the moment, if new packages are added then these are no
 when you just run apt update, in these cases you must use apt dist-upgrade.  
 So make sure you always check for "kept back" packages.
 
+Note, some packages are not removed with an upgrade. For example : libvmime (-kopano3)
+These might conflict and things might not works at it should.
+The fix is simple, use the following:  apt dist-upgrade --autoremove --purge 
+And now everything is upgraded and any unneeded packages is/are removed and purged.
+
 The script its defaults wil do following for you. 
 - create a folder /home/kopano
 - create a subfolder apt
@@ -40,6 +45,8 @@ The script its defaults wil do following for you.
   Now symlink /home/kopano/apt/ to /var/www/html/apt
   And dont forget to change localhost to you hostname of ip of you server.  
 
+The link to the kopano official documentation.
+https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html 
 
 ## donations
 If you like my work, support me a bit, even with 1 $ your helping me.  

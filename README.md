@@ -6,7 +6,7 @@ Scripts for Kopano.
 Currently tested on Debian 10 but should work for Debian 8-9 and Ubuntu 16/18 .04 (LTS editions) also.<br>
 This eliminates the use of `dpkg -i *.deb on kopano-community files.`
 
-It setups a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>
+It sets up a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>
 It also adds the z-push repo and libreoffice-online repo for you.<br>
 I've also added an autobackup function, so you can revert to a previous version if needed.<br>
 

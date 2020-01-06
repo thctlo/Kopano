@@ -21,8 +21,8 @@ And too see the new versions, you can use the following command:
 apt-cache policy kopano-server-packages kopano-webapp z-push-kopano libreoffice-online
 ```
 
-Note, when you are upgrading and you might see packages are "kept back".<br>
-This is why:<br>
+Note, when you are upgrading and you might see packages are "kept back" and this is why.<br>
+<br>
 Kopano is fast moving at the moment, if new packages are added then these are not installed,<br>
 when you just run apt update, in these cases you must use `apt dist-upgrade`.<br>
 So make sure you always check for "kept back" packages.<br>

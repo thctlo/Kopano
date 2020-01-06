@@ -31,6 +31,8 @@ set -euo pipefail
 # Happy New Year release.
 # Updated 2.0, changed path's, detections and added extra files to download.
 # Updated 2.1,  2020-01-06, Fix, dont download Debian_10 dependencies on ubuntu.
+# Updated 2.1.1 2020-01-06 add fixes from https://github.com/lcnittl/get_kopano-ce
+#             Unable to pull it due to filename changes
 #
 # Sources used:
 # https://download.kopano.io/community/
@@ -75,6 +77,16 @@ ENABLE_Z_PUSH_REPO="yes"
 ENABLE_LIBREOFFICE_ONLINE="no"
 
 ################################################################################
+# TODO functionize the script.
+
+check_run_as_sudo_root () {
+    if ! [[ $EUID -eq 0 ]]; then
+        error "This script should be run using sudo or by root."
+        exit 1
+    fi
+}
+
+check_run_as_sudo_root
 
 # dependencies for this script:
 NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx sudo tee"
@@ -302,7 +314,7 @@ if [ "${ENABLE_Z_PUSH_REPO}" = "yes" ]; then
         # install the repo key once.
         if [ "$(apt-key list | grep -c kopano)" -eq 0 ]; then
             echo -n "Installing z-push signing key : "
-            curl -vs http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | sudo apt-key add -
+            curl -q -L http://repo.z-hub.io/z-push:/final/"${GET_OS}"/Release.key | sudo apt-key add -
         else
             echo "The Kopano Z_PUSH repo key was already installed."
         fi

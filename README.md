@@ -23,10 +23,11 @@ apt-cache policy kopano-server-packages kopano-webapp z-push-kopano libreoffice-
 
 Note, when you are upgrading and you might see packages are "kept back" and this is why.<br>
 <br>
-Kopano is fast moving at the moment, if new packages are added then these are not installed,<br>
+Kopano is fast moving at the moment, sometimes new packages are added or older removed,<br>
 when you just run apt update, in these cases you must use `apt dist-upgrade`.<br>
 So make sure you always check for "kept back" packages.<br>
-But there are also packages which might not be removed when upgrading and to make this all work, 
+<br>
+But there are also packages which might not be removed when upgrading and to make this all work,<br>
 you might want to at these options --autoremove --purge, so you can run : `apt dist-upgrade --autoremove --purge`<br>
 This removed obsolete files and installes the kept back packages in one go.<br>
 

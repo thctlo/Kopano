@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+#set -euo pipefail
 
 # Kopano Core Communtiy Packages Downloader
 #
@@ -33,6 +33,7 @@ set -euo pipefail
 # Updated 2.1,  2020-01-06, Fix, dont download Debian_10 dependencies on ubuntu.
 # Updated 2.1.1 2020-01-06 add fixes from https://github.com/lcnittl/get_kopano-ce
 #             Unable to pull it due to filename changes
+# Updated 2.1.2 2020-02-05 small fix, works but more todo.
 #
 # Sources used:
 # https://download.kopano.io/community/
@@ -60,7 +61,8 @@ ENABLE_AUTO_BACKUP="yes"
 # The Kopano Community link.
 KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
-KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp dependencies"
+KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp"
+# dependencies"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -247,11 +249,11 @@ if [ "${GET_ARCH}" = "amd64" ]; then
     mv -n ./*_all.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/amd64/ || true
     # remove left overs
     rm -f ./*.deb
-    rm ./Packages
-    rm ./Packages.gz
-    rm ./Release
-    rm ./Release.gpg
-    rm ./Release.key
+    rm ./${GET_OS}/Packages
+    rm ./${GET_OS}/Packages.gz
+    rm ./${GET_OS}/Release
+    rm ./${GET_OS}/Release.gpg
+    rm ./${GET_OS}/Release.key
     rm ./amd64/*.deb
     rmdir amd64
 
@@ -260,11 +262,11 @@ elif [ "${GET_ARCH}" == "i386" ] || [ "${GET_ARCH}" == "i686" ]; then
     mv -n ./*_all.deb "$BASE_FOLDER/$KOPANO_APTFOLDER"/i386/ || true
     # remove left overs
     rm -f  ./*.deb
-    rm ./Packages
-    rm ./Packages.gz
-    rm ./Release
-    rm ./Release.gpg
-    rm ./Release.key
+    rm ./${GET_OS}/Packages
+    rm ./${GET_OS}/Packages.gz
+    rm ./${GET_OS}/Release
+    rm ./${GET_OS}/Release.gpg
+    rm ./${GET_OS}/Release.key
     rm ./i386/*.deb
     rmdir i386
 fi

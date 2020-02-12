@@ -68,5 +68,5 @@ I dont ask for hunderds, a (few) buck(s) is/are a great gift also.<br>
 - Donate via Bitcoin: 3BMEXFUrncjVKByryNU1fcVLBLKE8i9TpX<br>
 
 ## Thanks
-@Christian Knittl-Frank for fixes so far. (https://github.com/lcnittl)
-@fbartels (@Kopano) for helping out. (https://github.com/fbartels)
+@Christian Knittl-Frank for fixes so far. (https://github.com/lcnittl)<br>
+@fbartels (@Kopano) for helping out. (https://github.com/fbartels)<br>

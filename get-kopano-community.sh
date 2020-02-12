@@ -34,6 +34,7 @@
 # Updated 2.1.1 2020-01-06 add fixes from https://github.com/lcnittl/get_kopano-ce
 #             Unable to pull it due to filename changes
 # Updated 2.1.2 2020-02-05 small fix, works but more todo.
+# Updated 2.1.3 2020-02-11 fix failed fix for 1.5.1. (thank Felix Bartels @Kopano for reporting)
 #
 # Sources used:
 # https://download.kopano.io/community/
@@ -62,7 +63,7 @@ ENABLE_AUTO_BACKUP="yes"
 KOPANO_COMMUNITY_URL="https://download.kopano.io/community"
 # The packages you can pull and put directly in to the repo.
 KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp"
-# dependencies"
+#optional, add dependencies"
 
 # TODO
 # make function for regular .tar.gz files like :
@@ -98,7 +99,9 @@ NEEDED_PROGRAMS="lsb_release apt-ftparchive curl gnupg2 lynx sudo tee"
 #### Program
 for var in $NEEDED_PROGRAMS; do
     # fix for 1.5.1.
-    if var="gnupg2"; then var=gpg2; fi
+    if [ "$var" = "gnupg2" ]; then
+	var=gpg2
+    fi
     if ! command -v "$var" &> /dev/null; then
         echo "$var is missing. Please install it and rerun the script."
         exit 1

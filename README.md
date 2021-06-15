@@ -19,7 +19,7 @@ apt install kopano-server-packages
 
 And too see the new versions, you can use the following command:
 ```
-apt-cache policy kopano-server-packages kopano-webapp z-push-kopano libreoffice-online
+apt-cache policy kopano-server-packages kopano-webapp z-push-kopano
 ```
 
 Note, when you are upgrading and you might see packages are "kept back" and this is why.<br>
@@ -38,7 +38,7 @@ you might want to at these options --autoremove --purge, so you can run : `apt d
 This removed obsolete files and installes the kept back packages in one go.<br>
 
 The script and the default settings in it, will do following for you:<br>
-- create a folder `$HOME/kopano-repo` , you can adjust the path in the script if you like.<br>
+- create a folder `$HOME/repo/kopano` , you can adjust the path in the script if you like.<br>
   ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/*.list files also.<br>
 - create a subfolder `apt`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
 - create a subfolder `tmp-extract`, this is used to download the tar.gz file and exact it in there.<br>
@@ -51,7 +51,6 @@ The script and the default settings in it, will do following for you:<br>
 - makes a backup of the previous version to `/home/kopano/backups/OS-ARCH-Date`<br>
 - cleanup leftovers in `apt` and `tmp-extract`.<br>
 - add z-push repo ( `/etc/apt/sources.list.d/kopano-z-push.list` )<br>
-- add libreoffice repo  ( `/etc/apt/sources.list.d/kopano-libreoffice-online.list` )<br>
 - setup the local-file repo ( `/etc/apt/sources.list.d/kopano-community.list` )<br>
 the repo example file:<br>
   - File setup for Kopano Community: `deb [trusted=yes] file:/home/kopano/apt/ amd64/`<br>

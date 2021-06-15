@@ -36,7 +36,7 @@ you might want to at these options --autoremove --purge, so you can run : `apt d
 This removed obsolete files and installes the kept back packages in one go.<br>
 
 The script and the default settings in it, will do following for you:<br>
-- create a folder `$HOME/repo/kopano` , you can adjust the path in the script if you like.<br>
+- create a folder `$REPO_BASE/repo/kopano` , you can adjust the path in the script if you like.<br>
   ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/*.list files also.<br>
 - create a subfolder `amd64/i386`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
   This is done due to different depts of subfolders in the tar.gz files, which made extacting and placing bit harder.<br>

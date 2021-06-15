@@ -3,13 +3,11 @@ Scripts for Kopano.
 
 `get-kopano-community.sh`: This script pull the community files for your OS and setup a repo so you can use apt-get to install.
 
-Currently tested on Debian 10 but should work for Debian 8-9 and Ubuntu 16/18 .04 (LTS editions) also.<br>
+Currently tested on Debian 10 but should work for Debian 8-9 and Ubuntu 16/18/20 .04 (LTS editions) also.<br>
 This eliminates the use of `dpkg -i *.deb on kopano-community files.`
 
 It sets up a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>
-It also adds the z-push repo and libreoffice-online repo for you.<br>
 Do note, verify if you happy with the default script settings.<br>
-I've also added an autobackup function, so you can revert to a previous version if needed.<br>
 
 For the quick and unpatient, keep the defaults and run:<br>
 ```
@@ -40,23 +38,19 @@ This removed obsolete files and installes the kept back packages in one go.<br>
 The script and the default settings in it, will do following for you:<br>
 - create a folder `$HOME/repo/kopano` , you can adjust the path in the script if you like.<br>
   ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/*.list files also.<br>
-- create a subfolder `apt`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
-- create a subfolder `tmp-extract`, this is used to download the tar.gz file and exact it in there.<br>
-- create a subfolder `download`, we keep the download, this might be handy to revert to older version.<br>
+- create a subfolder `amd64/i386`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
   This is done due to different depts of subfolders in the tar.gz files, which made extacting and placing bit harder.<br>
   So we dump all in a temp folder and move it when ready to $ARCH.<br>
-- create a subfolder `backups`, when you run the script, the folder apt/$ARCH is moved to backups.<br>
-  If the kopano packages had a bad release, you can revert back to a previous version.<br>
 - pulls the files from the Kopano community site.<br>
-- makes a backup of the previous version to `/home/kopano/backups/OS-ARCH-Date`<br>
+- makes a backup of the previous version to `$REPO_BASE/repo/kopano/ARCH-Date`<br>
 - cleanup leftovers in `apt` and `tmp-extract`.<br>
 - add z-push repo ( `/etc/apt/sources.list.d/kopano-z-push.list` )<br>
 - setup the local-file repo ( `/etc/apt/sources.list.d/kopano-community.list` )<br>
 the repo example file:<br>
-  - File setup for Kopano Community: `deb [trusted=yes] file:/home/kopano/apt/ amd64/`<br>
-  - Webserver setup for Kopano Community: `deb [trusted=yes] http://localhost/apt amd64/`<br>
+  - File setup for Kopano Community: `deb [trusted=yes] file:/REPO_BASE/kopano/ amd64/`<br>
+  - Webserver setup for Kopano Community: `deb [trusted=yes] http://localhost/kopano amd64/`<br>
   To enable the webserver, install a webserver ( apache/nginx )<br>
-  Now symlink `/home/kopano/apt/` to `/var/www/html/apt`<br>
+  Now symlink `/REPO_BASE/kopano/` to `/var/www/html/kopano`<br>
   And dont forget to change localhost to you hostname of ip of you server.<br>
 
 

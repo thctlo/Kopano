@@ -31,11 +31,12 @@ set -euo pipefail
 # Happy New Year release.
 # Updated 2.0, changed path's, detections and added extra files to download.
 # Updated 2.1,  2020-01-06, Fix, dont download Debian_10 dependencies on ubuntu.
-# Updated 2.1.1 2020-01-06 add fixes from https://github.com/lcnittl/get_kopano-ce
+# Updated 2.1.1 2020-01-06, add fixes from https://github.com/lcnittl/get_kopano-ce
 #             Unable to pull it due to filename changes
-# Updated 2.1.2 2020-02-05 small fix, works but more todo.
-# Updated 2.1.3 2020-02-11 fix failed fix for 1.5.1. (thank Felix Bartels @Kopano for reporting)
+# Updated 2.1.2 2020-02-05, small fix, works but more todo.
+# Updated 2.1.3 2020-02-11, fix failed fix for 1.5.1. (thank Felix Bartels @Kopano for reporting)
 # Version 3.0.0 2021-06-15, rework of complete script. code verified with : shellcheck 0.5.0-3
+# Version 3.0.1 2021-06-16, small fixes on the creating/moving/deleting repo folder, change outputs a bit.
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -129,6 +130,9 @@ fi
 
 echo "Script is running on : $OSNAME $OSDIST"
 
+# Default Repo location for kopano
+REPO_BASE_FOLDER="${BASE_FOLDER:-/srv/repo/kopano}"
+
 function check_package_or_commands_are_installed {
 # check if needed packages are installed.
 NEEDED_PGK="curl jq apt-ftparchive"
@@ -149,9 +153,9 @@ do
 done
 }
 
+# Zokradonh his functions to get the files
 function urldecode { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 function version_from_filename { basename "$1" | awk -F"-" '{print $2}'; }
-
 function h5ai_query {
     component=${1:-core}
     distribution=${2:-Debian_10}
@@ -172,11 +176,12 @@ function h5ai_query {
 }
 
 function before_dl_and_extract_doBackup {
+    echo "Detected variable REPO_BASE_FOLDER/GET_ARCH : $REPO_BASE_FOLDER/$GET_ARCH/"
     if [ -d "$REPO_BASE_FOLDER/$GET_ARCH/" ]
     then
         if [ ! -d "$REPO_BASE_FOLDER/$GET_ARCH-$RUN_DATE" ]
         then
-            echo "moving older version to $REPO_BASE_FOLDER/$GET_ARCH-$RUN_DATE"
+            echo "Moving older version to $REPO_BASE_FOLDER/$GET_ARCH-$RUN_DATE"
             mv "$REPO_BASE_FOLDER/$GET_ARCH" "$REPO_BASE_FOLDER/$GET_ARCH-$RUN_DATE"
             mkdir -p "$REPO_BASE_FOLDER/$GET_ARCH/"
         else
@@ -187,13 +192,12 @@ function before_dl_and_extract_doBackup {
             fi
         fi
     else
+        echo "NOT Detected : $REPO_BASE_FOLDER/$GET_ARCH/ creating folder now."
         mkdir -p "$REPO_BASE_FOLDER/$GET_ARCH/"
     fi
 }
 
 function dl_and_package_kopano_community {
-
-
     # Take component as first argument and fallback to core if none given
     component=${1:-core}
     distribution=${2:-Debian_10}
@@ -215,19 +219,10 @@ function dl_and_package_kopano_community {
 
     # Save disk space.
     # Todo add option to keep these,add time stamps so we dont need to re-download if needed.
-    rm "$filename2"
+
     # Some leftovers to cleanup
-    if [ ! -z "${REPO_BASE_FOLDER}" ]
-    then
-        rm -rf "${REPO_BASE_FOLDER:?}"
-    elif [ ! -d "${REPO_BASE_FOLDER}" ]
-    then
-        echo "ERROR, exiting, unable to detect folder : REPO_BASE_FOLDER"
-        exit 1
-    else
-        echo "ERROR, exiting, empty value detected for : REPO_BASE_FOLDER"
-        exit 1
-    fi
+    rm "$filename2"
+
 }
 
 ### Z-PUSH start
@@ -241,7 +236,7 @@ if [ "${REPO_ENABLE_Z_PUSH}" = "yes" ]
 
     # install the repo key once.
     if [ "$(apt-key list | grep -c kopano)" -eq 0 ]; then
-        echo -n "Installing z-push signing key : "
+        echo -n "Installing z-push signing key."
         curl -q -L "${SET_Z_PUSH_REPO}"/Release.key | sudo apt-key add -
     else
         echo "The Kopano Z_PUSH repo key was already installed."
@@ -252,7 +247,7 @@ if [ "${REPO_ENABLE_Z_PUSH}" = "yes" ]
             {
             echo "# "
             echo "# Kopano z-push repo"
-            echo "# Documentation: https://wiki.z-hub.io/display/ZP/Installation"
+            echo "# Documentation: https://kb.kopano.io/display/ZP/Installation"
             echo "# https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
             echo "# https://documentation.kopano.io/user_manual_kopanocore/configure_mobile_devices.html"
             echo "# Options to set are :"
@@ -268,7 +263,7 @@ if [ "${REPO_ENABLE_Z_PUSH}" = "yes" ]
         echo ""
     fi
     echo "The z-push info : https://documentation.kopano.io/kopanocore_administrator_manual/configure_kc_components.html#configure-z-push-activesync-for-mobile-devices"
-    echo "Before you configure/install also read : https://wiki.z-hub.io/display/ZP/Installation"
+    echo "Before you configure/install also read : https://kb.kopano.io/display/ZP/Installation"
     echo ""
 fi
 ### Z_PUSH End
@@ -279,7 +274,7 @@ function generate_kopano_Packages_for_repo {
     then
         cat > /etc/apt/sources.list.d/kopano-community.list <<'_EOF'
 # File setup for Kopano Community."
-deb [trusted=yes] file:$REPO_BASE_FOLDER"/kopano/ ${GET_ARCH}/"
+deb [trusted=yes] file:$REPO_BASE_FOLDER" ${GET_ARCH}/"
 # Webserver setup for Kopano Community."
 #deb [trusted=yes] http://localhost/kopano/ ${GET_ARCH}/"
 # to enable the webserver, install a webserver ( apache/nginx )"
@@ -294,10 +289,12 @@ else
         echo "The Kopano apt-list file: /etc/apt/sources.list.d/kopano-community.list already exists."
 fi
 
-    cd "$REPO_BASE_FOLDER"
-    apt-ftparchive packages "${GET_ARCH}"/ >> "${GET_ARCH}"/Packages
+    cd "$REPO_BASE_FOLDER" || exit 1
+    echo "Generating packages file : ${GET_ARCH}/Packages"
+    apt-ftparchive packages "${GET_ARCH}"/ > "${GET_ARCH}"/Packages
+    echo -n "Running apt update, please wait: "
     apt-get update -q=2
-
+    echo "Done"
 }
 
 function cleanup {
@@ -305,54 +302,33 @@ function cleanup {
     echo "Deleted temp working directory $WORK_DIR"
 }
 
-## Code
-
-
-# Setup base folder
-if [ -z "$BASE_FOLDER" ]
-then
-    REPO_BASE_FOLDER="${BASE_FOLDER:-/srv/repo/kopano}"
-    if [ ! -d "$REPO_BASE_FOLDER" ]
-    then
-        mkdir -p "$REPO_BASE_FOLDER"
-    else
-        echo "REPO_BASE_FOLDER : $REPO_BASE_FOLDER, already exists."
-    fi
-else
-    REPO_BASE_FOLDER="${BASE_FOLDER:-/srv/repo/kopano}"
-    if [ ! -d "$REPO_BASE_FOLDER" ]
-    then
-        mkdir -p "$REPO_BASE_FOLDER"
-    else
-        echo "REPO_BASE_FOLDER : $REPO_BASE_FOLDER, already exists."
-    fi
-fi
-
+### Program Code start here ###
 # Safe Old Internal Field Separator values.
 SAVEIFS=$IFS
 
 WORK_DIR="$(mktemp -d)"
 cd "$WORK_DIR"
 
+# Get the files and backup previous versions
 before_dl_and_extract_doBackup
 
 for get_kopano_component in $KOPANO_COMMUNITY_PKG
 do
-    #
-    component=$get_kopano_component
-
     # New Internal Field Separator is set.
     IFS=$'\n\t'
-
-    dl_and_package_kopano_community "$component"
-
+    echo -n "Please wait, getting kopano components : $get_kopano_component : "
+    dl_and_package_kopano_community "$get_kopano_component"
+    echo "Done"
     # Restore Old Internal Field Separator values.
     IFS=$SAVEIFS
-
 done
 
-# cleanup
+# Cleanup workdir
 rm -rf  "$WORK_DIR"
+
+# Remove some leftovers
+rm  "$REPO_BASE_FOLDER/${GET_ARCH}/$distribution/"*
+rmdir "$REPO_BASE_FOLDER/${GET_ARCH}/$distribution"
 
 # Create the Packages index for the repo
 generate_kopano_Packages_for_repo

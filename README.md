@@ -36,21 +36,20 @@ you might want to at these options --autoremove --purge, so you can run : `apt d
 This removed obsolete files and installes the kept back packages in one go.<br>
 
 The script and the default settings in it, will do following for you:<br>
-- create a folder `$REPO_BASE/repo/kopano` , you can adjust the path in the script if you like.<br>
+- create a folder `$BASE_FOLDER` defaults to : /srv/repo/kopano, you can adjust the path in the script if you like.<br>
   ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/*.list files also.<br>
 - create a subfolder `amd64/i386`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
-  This is done due to different depts of subfolders in the tar.gz files, which made extacting and placing bit harder.<br>
-  So we dump all in a temp folder and move it when ready to $ARCH.<br>
-- pulls the files from the Kopano community site.<br>
+- pulls the files from the Kopano community site. <br>
+  i've set as default : KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"  <br>
 - makes a backup of the previous version to `$REPO_BASE/repo/kopano/ARCH-Date`<br>
-- cleanup leftovers in `apt` and `tmp-extract`.<br>
+- cleanup leftovers.<br>
 - add z-push repo ( `/etc/apt/sources.list.d/kopano-z-push.list` )<br>
 - setup the local-file repo ( `/etc/apt/sources.list.d/kopano-community.list` )<br>
 the repo example file:<br>
-  - File setup for Kopano Community: `deb [trusted=yes] file:/REPO_BASE/kopano/ amd64/`<br>
-  - Webserver setup for Kopano Community: `deb [trusted=yes] http://localhost/kopano amd64/`<br>
+  - File setup for Kopano Community: `deb [trusted=yes] file:/$BASE_FOLDER/kopano/ amd64/`<br>
+  - Webserver setup for Kopano Community: `deb [trusted=yes] http://localhost/kopano/ amd64/`<br>
   To enable the webserver, install a webserver ( apache/nginx )<br>
-  Now symlink `/REPO_BASE/kopano/` to `/var/www/html/kopano`<br>
+  Now symlink `/$BASE_FOLDER/kopano/` to `/var/www/html/kopano`<br>
   And dont forget to change localhost to you hostname of ip of you server.<br>
 
 

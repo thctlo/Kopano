@@ -37,6 +37,7 @@ set -euo pipefail
 # Updated 2.1.3 2020-02-11, fix failed fix for 1.5.1. (thank Felix Bartels @Kopano for reporting)
 # Version 3.0.0 2021-06-15, rework of complete script. code verified with : shellcheck 0.5.0-3
 # Version 3.0.1 2021-06-16, small fixes on the creating/moving/deleting repo folder, change outputs a bit.
+# Version 3.0.2 2021-08-21, fix corrupted kopano-community.list
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -272,14 +273,14 @@ fi
 function generate_kopano_Packages_for_repo {
     if [ ! -e /etc/apt/sources.list.d/kopano-community.list ]
     then
-        cat > /etc/apt/sources.list.d/kopano-community.list <<'_EOF'
-# File setup for Kopano Community."
-deb [trusted=yes] file:$REPO_BASE_FOLDER" ${GET_ARCH}/"
-# Webserver setup for Kopano Community."
-#deb [trusted=yes] http://localhost/kopano/ ${GET_ARCH}/"
-# to enable the webserver, install a webserver ( apache/nginx )"
-# and symlink ${REPO_BASE_FOLDER}/ to /var/www/html/kopano"
-# example : ln -s /srv/repo/kopano /var/www/html/kopano"
+        cat > /etc/apt/sources.list.d/kopano-community.list << _EOF
+# File setup for Kopano Community.
+deb [trusted=yes] file:$REPO_BASE_FOLDER $GET_ARCH}/
+# Webserver setup for Kopano Community.
+#deb [trusted=yes] http://localhost/kopano/ $GET_ARCH/
+# to enable the webserver, install a webserver ( apache/nginx )
+# and symlink $REPO_BASE_FOLDER/ to /var/www/html/kopano
+# example : ln -s /srv/repo/kopano /var/www/html/kopano
 _EOF
 
     echo " "

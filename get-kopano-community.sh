@@ -50,20 +50,20 @@ set -euo pipefail
 # wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
 # Optional, when you are upgrading: apt dist-upgrade && kopano-dbadm usmp
 
-##### Variable you must set. #######
-####################################
-# Dont change the base folder once its set! (after you run the script once) !!!
-# If you do you need to change the the file:
+##### Variables you must set. #######
+#####################################
+# Don't change the base folder once it's set! (after you run the script once) !!!
+# If you do you need to change the file:
 #  /etc/apt/sources.list.d/kopano-community.list also.
 # Defaults to /srv/repo/kopano"  ( if unsure, leave as is.)
 # Packages will go in : /srv/repo/kopano/amd64 for example.
-# $HOME/kopano is and other good option.
+# $HOME/kopano is another good option.
 BASE_FOLDER=""
-# ! If you use a home folder for BASE_FOLDER, you probely want to run
-# the scrip as user also. Set below to something else then "no"
+# ! If you use a home folder for BASE_FOLDER, you probably want to run
+# the script as user also. Set below to something else then "no"
 DISABLE_RUN_AS_ROOT="no"
 
-# The Kopano packages you can pull and put directly in to the repo.
+# The Kopano packages you can pull and put directly into the repo.
 # Pre selected the most used packages.
 KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"
 # Optional, you can add (is tested): deskapp kapps mattermost meet webmeetings
@@ -71,7 +71,7 @@ KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"
 # If you want z-push available also in your apt, set this to yes.
 # Z-push repo stages, final, od/pre-final, development
 # See also : https://kb.kopano.io/display/ZP/Installation
-# After the setup, its explained in the repo filo.
+# After the setup, it's explained in the repo filo.
 REPO_ENABLE_Z_PUSH="yes"
 
 # Autobackup the previous version.

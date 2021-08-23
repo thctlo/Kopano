@@ -11,8 +11,8 @@ Do note, verify if you happy with the default script settings.<br>
 
 For the quick and unpatient, keep the defaults and run:<br>
 ```
-wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | bash
-apt install kopano-server-packages
+wget -O - https://raw.githubusercontent.com/thctlo/Kopano/master/get-kopano-community.sh | sudo bash
+sudo apt install kopano-server-packages
 ```
 
 And too see the new versions, you can use the following command:

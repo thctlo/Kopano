@@ -39,6 +39,7 @@ set -euo pipefail
 # Version 3.0.1 2021-06-16, small fixes on the creating/moving/deleting repo folder, change outputs a bit.
 # Version 3.0.2 2021-08-21, fix corrupted kopano-community.list @Thanks @Marco for the git pull
 # Version 3.0.3 2021-08-23, fix failed command detection, fixed unneeded artifact "}" in the sources.list file.
+# Version 3.0.4 2021-08-23, Added part for dependencies, needs manual input of the download link. (for now). 
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -329,6 +330,47 @@ do
     # Restore Old Internal Field Separator values.
     IFS=$SAVEIFS
 done
+
+# Get missing dependecies
+# https://download.kopano.io/community/dependencies%3A/ 
+# Needs manual input for now. 
+if [ "${OSNAME}" = "Debian" ]
+then
+
+    if [ "${OSDISTVER}" -eq 10 ]
+    then
+        echo
+        echo "######################################################################"
+        echo "Detected a ${OSNAME}_${OSDISTVER}  installation, we need to add extra dependencies."
+        echo "Please go here with a browser : "
+        echo " https://download.kopano.io/community/dependencies%3A/ "
+        echo "Now sort on \"modified\" and get the latest version for you OS."
+        read -r -p "Copy the link address to the file and post it here : " DEPENDS_URL
+        DEPENDS_FILENAME="$(echo $DEPENDS_URL|awk -F"/" '{ print $6 }')"
+        curl -s -S -L -o "$DEPENDS_FILENAME" $DEPENDS_URL
+        tar -zxf "$DEPENDS_FILENAME" -C "$REPO_BASE_FOLDER/$GET_ARCH/" --strip-components 1
+        unset DEPENDS_URL
+    fi
+elif [ "${OSNAME}" = "Ubuntu" ]
+then
+    # For ubuntu results in Ubuntu_20.04
+    GET_OS="${OSNAME}_${OSDISTVER}"
+    if [ "${GET_OS}" = "Ubuntu_20.04" ]
+    then
+        echo
+        echo "######################################################################"
+        echo "Detected a ${GET_OS} installation, we need to add extra dependencies."
+        echo "Please go here with a browser : "
+        echo " https://download.kopano.io/community/dependencies%3A/ "
+        echo "Now sort on \"modified\" and get the latest version for you OS."
+        read -r -p "Copy the link address to the file and post it here : " DEPENDS_URL
+        DEPENDS_FILENAME="$(echo $DEPENDS_URL|awk -F"/" '{ print $6 }')"
+        curl -s -S -L -o "$DEPENDS_FILENAME" $DEPENDS_URL
+        tar -zxf "$DEPENDS_FILENAME" -C "$REPO_BASE_FOLDER/$GET_ARCH/" --strip-components 2
+        unset DEPENDS_URL
+    fi
+fi
+
 
 # Cleanup workdir
 rm -rf  "$WORK_DIR"

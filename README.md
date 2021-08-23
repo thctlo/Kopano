@@ -3,7 +3,7 @@ Scripts for Kopano.
 
 `get-kopano-community.sh`: This script pull the community files for your OS and setup a repo so you can use apt-get to install.
 
-Currently tested on Debian 10 but should work for Debian 8-9 and Ubuntu 16/18/20 .04 (LTS editions) also.<br>
+It's currently tested on Debian 10 and Ubuntu 20.04 but should work for Debian 8-9 and Ubuntu 16/18/20 .04 (LTS editions) also.<br>
 This eliminates the use of `dpkg -i *.deb on kopano-community files.`
 
 It sets up a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>

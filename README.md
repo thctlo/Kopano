@@ -37,7 +37,7 @@ This removed obsolete files and installes the kept back packages in one go.<br>
 
 The script and the default settings in it, will do following for you:<br>
 - create a folder `$BASE_FOLDER` defaults to : /srv/repo/kopano, you can adjust the path in the script if you like.<br>
-  ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/*.list files also.<br>
+  ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/kopano-community.list file also.<br>
 - create a subfolder `amd64/i386`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
 - pulls the files from the Kopano community site. <br>
   i've set as default : KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"  <br>

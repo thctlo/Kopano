@@ -37,7 +37,8 @@ set -euo pipefail
 # Updated 2.1.3 2020-02-11, fix failed fix for 1.5.1. (thank Felix Bartels @Kopano for reporting)
 # Version 3.0.0 2021-06-15, rework of complete script. code verified with : shellcheck 0.5.0-3
 # Version 3.0.1 2021-06-16, small fixes on the creating/moving/deleting repo folder, change outputs a bit.
-# Version 3.0.2 2021-08-21, fix corrupted kopano-community.list
+# Version 3.0.2 2021-08-21, fix corrupted kopano-community.list @Thanks @Marco for the git pull
+# Version 3.0.3 2021-08-23, fix failed command detection, fixed unneeded artifact "}" in the sources.list file.
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -65,9 +66,10 @@ BASE_FOLDER=""
 DISABLE_RUN_AS_ROOT="no"
 
 # The Kopano packages you can pull and put directly into the repo.
-# Pre selected the most used packages.
+# Pre-selected the most used packages.
 KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"
 # Optional, you can add (is tested): deskapp kapps mattermost meet webmeetings
+# (Note, webmeeting is marked predicated)
 
 # If you want z-push available also in your apt, set this to yes.
 # Z-push repo stages, final, od/pre-final, development
@@ -120,7 +122,7 @@ fi
 function check_run_as_sudo_root {
 if ! [[ $EUID -eq 0 ]]
 then
-    error "This script should be run using sudo or by root."
+    echo "This script should be run using sudo or by root."
     exit 1
 fi
 }
@@ -139,17 +141,18 @@ function check_package_or_commands_are_installed {
 NEEDED_PGK="curl jq apt-ftparchive"
 for check_pkg in $NEEDED_PGK
 do
-    CHECK_PKG_INSTALLED="$(command -v "$check_pkg" >/dev/null)"
-    if [ "$CHECK_PKG_INSTALLED" = 1 ]
+    if [ -z "$(command -v $check_pkg)" ]
     then
-        echo "Script is missing a needed program/package: $check_pkg, installing now"
-        apt-get -q=2 install "$check_pkg" > /dev/null
+        if [ "$check_pkg" = "apt-ftparchive" ]
+        then
+            echo "apt-ftparchive is coming from apt-utils, installing now.."
+            apt-get -q=2 install apt-utils > /dev/null
+        else
+            echo -n "Script is missing a needed program/package: $check_pkg, installing now : "
+            apt-get -q=2 install "$check_pkg" > /dev/null
+        fi
     else
         echo "$check_pkg found"
-    fi
-    if [ "$check_pkg" = "apt-ftparchive" ]
-    then
-        apt-get -q=2 install apt-utils > /dev/null
     fi
 done
 }
@@ -275,7 +278,7 @@ function generate_kopano_Packages_for_repo {
     then
         cat > /etc/apt/sources.list.d/kopano-community.list << _EOF
 # File setup for Kopano Community.
-deb [trusted=yes] file:$REPO_BASE_FOLDER $GET_ARCH}/
+deb [trusted=yes] file:$REPO_BASE_FOLDER $GET_ARCH/
 # Webserver setup for Kopano Community.
 #deb [trusted=yes] http://localhost/kopano/ $GET_ARCH/
 # to enable the webserver, install a webserver ( apache/nginx )
@@ -309,6 +312,9 @@ SAVEIFS=$IFS
 
 WORK_DIR="$(mktemp -d)"
 cd "$WORK_DIR"
+
+# Make sure all needed packages for the program are installed.
+check_package_or_commands_are_installed
 
 # Get the files and backup previous versions
 before_dl_and_extract_doBackup

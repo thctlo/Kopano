@@ -50,7 +50,7 @@ the repo example file:<br>
   - Webserver setup for Kopano Community: `deb [trusted=yes] http://localhost/kopano/ amd64/`<br>
   To enable the webserver, install a webserver ( apache/nginx )<br>
   Now symlink `/$BASE_FOLDER/kopano/` to `/var/www/html/kopano`<br>
-  And dont forget to change localhost to you hostname of ip of you server.<br>
+  And dont forget to change localhost to you hostname or ip of the virtual host of the webserver.<br>
 
 
 ## Donations

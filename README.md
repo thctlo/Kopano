@@ -1,13 +1,13 @@
 # Kopano
 Scripts for Kopano.
 
-`get-kopano-community.sh`: This script pull the community files for your OS and setup a repo so you can use apt-get to install.
+`get-kopano-community.sh`: This script pulls the community (development) files for your OS and setup a repo so you can use apt-get to install.
 
 It's currently tested on Debian 10 and Ubuntu 20.04 but should work for Debian 8-9 and Ubuntu 16/18/20 .04 (LTS editions) also.<br>
 This eliminates the use of `dpkg -i *.deb on kopano-community files.`
 
 It sets up a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>
-Do note, verify if you happy with the default script settings.<br>
+Do note, verify if you are happy with the default script settings.<br>
 
 For the quick and unpatient, keep the defaults and run:<br>
 ```
@@ -24,14 +24,14 @@ Note, when you are upgrading and you might see packages are "kept back" and this
 <br>
 Kopano is fast moving at the moment, sometimes new packages are added or older removed,<br>
 when you just run apt update, in these cases you must use `apt dist-upgrade --autoremove`.<br>
-So make sure you always check for "kept back" packages.<br>
+So make sure, you always check for "kept back" packages.<br>
 The `--autoremove` is very handy with the upgrades, for example.<br>
 libgsoap-kopano-x.y.z. this one of often upgraded but the older version is not autoremoved.<br>
 which results in possible, strange things within Kopano, autoremove removed the older version<br>
 while upgradeing.<br>
 
 <br>
-But there are also packages which might not be removed when upgrading and to make this all work,<br>
+But there are also packages which might not be removed while upgrading and to make this all work,<br>
 you might want to at these options --autoremove --purge, so you can run : `apt dist-upgrade --autoremove --purge`<br>
 This removed obsolete files and installes the kept back packages in one go.<br>
 
@@ -39,9 +39,12 @@ The script and the default settings in it, will do following for you:<br>
 - create a folder `$BASE_FOLDER` defaults to : /srv/repo/kopano, you can adjust the path in the script if you like.<br>
   ! Do note, if you change it after you have run it, you need to adjust the /etc/apt/sources.list.d/kopano-community.list file also.<br>
 - create a subfolder `amd64/i386`, this is the folder where the "$ARCH"/*.deb files will be placed.<br>
-- pulls the files from the Kopano community site. <br>
+- pulls the files from the Kopano community (development) site. <br>
   i've set as default : KOPANO_COMMUNITY_PKG="core archiver files mdm smime webapp migration-pst"  <br>
+  this is what most use and will use.<br>
 - makes a backup of the previous version to `$REPO_BASE/repo/kopano/ARCH-Date`<br>
+  if there is a bad build, which can happen, you now van revert to the previous packages, note, this is a MANUAL action.<br>
+  There is no restore option in the script. <br>
 - cleanup leftovers.<br>
 - add z-push repo ( `/etc/apt/sources.list.d/kopano-z-push.list` )<br>
 - setup the local-file repo ( `/etc/apt/sources.list.d/kopano-community.list` )<br>

@@ -42,6 +42,7 @@ set -euo pipefail
 # Version 3.0.3 2021-08-23, fix failed command detection, fixed unneeded artifact "}" in the sources.list file.
 # Version 3.0.4 2021-08-23, Added part for dependencies, needs manual input of the download link. (for now). 
 # Version 3.0.5 2021-08-23, The "Stupidity release.. fixed, incorrect OS detected, it was always Debian_10. 
+# Version 3.0.6 2021-08-23, Made function of dependencies, needed when building from source. 
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -332,7 +333,7 @@ do
     # Restore Old Internal Field Separator values.
     IFS=$SAVEIFS
 done
-
+function missingBuildDepends(){
 # Get missing dependecies
 # https://download.kopano.io/community/dependencies%3A/ 
 # Needs manual input for now. 
@@ -372,7 +373,7 @@ then
         unset DEPENDS_URL
     fi
 fi
-
+}
 
 # Cleanup workdir
 rm -rf  "$WORK_DIR"

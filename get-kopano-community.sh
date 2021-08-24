@@ -3,6 +3,7 @@
 set -euo pipefail
 
 # Kopano Core Communtiy Packages Downloader V3.
+# *(Please do note, these are development packages, use with care.)
 #
 # By Louis van Belle
 # Tested on Debian 10 amd64, should work on Ubuntu ?? please test and report back.
@@ -40,6 +41,7 @@ set -euo pipefail
 # Version 3.0.2 2021-08-21, fix corrupted kopano-community.list @Thanks @Marco for the git pull
 # Version 3.0.3 2021-08-23, fix failed command detection, fixed unneeded artifact "}" in the sources.list file.
 # Version 3.0.4 2021-08-23, Added part for dependencies, needs manual input of the download link. (for now). 
+# Version 3.0.5 2021-08-23, The "Stupidity release.. fixed, incorrect OS detected, it was always Debian_10. 
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -163,7 +165,7 @@ function urldecode { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 function version_from_filename { basename "$1" | awk -F"-" '{print $2}'; }
 function h5ai_query {
     component=${1:-core}
-    distribution=${2:-Debian_10}
+    distribution="${GET_OS}"
     channel=${3:-community} # could either be community, supported or limited
     branch=${4:-""} # could either be empty, "master/tarballs/", "pre-final/tarballs/" or "final/tarballs/"
 
@@ -205,7 +207,7 @@ function before_dl_and_extract_doBackup {
 function dl_and_package_kopano_community {
     # Take component as first argument and fallback to core if none given
     component=${1:-core}
-    distribution=${2:-Debian_10}
+    distribution="${GET_OS}"
     channel=${3:-community}
     branch=${4:-""}
 

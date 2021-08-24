@@ -346,7 +346,7 @@ then
         echo "Detected a ${OSNAME}_${OSDISTVER}  installation, we need to add extra dependencies."
         echo "Please go here with a browser : "
         echo " https://download.kopano.io/community/dependencies%3A/ "
-        echo "Now sort on \"modified\" and get the latest version for you OS."
+        echo "Now sort on \"Last modified\" and get the latest version for your OS."
         read -r -p "Copy the link address to the file and post it here : " DEPENDS_URL
         DEPENDS_FILENAME="$(echo $DEPENDS_URL|awk -F"/" '{ print $6 }')"
         curl -s -S -L -o "$DEPENDS_FILENAME" $DEPENDS_URL
@@ -364,7 +364,7 @@ then
         echo "Detected a ${GET_OS} installation, we need to add extra dependencies."
         echo "Please go here with a browser : "
         echo " https://download.kopano.io/community/dependencies%3A/ "
-        echo "Now sort on \"modified\" and get the latest version for you OS."
+        echo "Now sort on \"Last modified\" and get the latest version for your OS."
         read -r -p "Copy the link address to the file and post it here : " DEPENDS_URL
         DEPENDS_FILENAME="$(echo $DEPENDS_URL|awk -F"/" '{ print $6 }')"
         curl -s -S -L -o "$DEPENDS_FILENAME" $DEPENDS_URL

@@ -43,6 +43,7 @@ set -euo pipefail
 # Version 3.0.4 2021-08-23, Added part for dependencies, needs manual input of the download link. (for now). 
 # Version 3.0.5 2021-08-23, The "Stupidity release.. fixed, incorrect OS detected, it was always Debian_10. 
 # Version 3.0.6 2021-08-23, Made function of dependencies, needed when building from source. 
+# Version 3.0.7 2021-08-30, Added support for Debian 11 Bullseye, ITS NOT IN KOPANO YET !! only enabled it in script.
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -108,7 +109,7 @@ OSDISTVER0="$(lsb_release -sr|cut -c1).0"
 if [ "${OSNAME}" = "Debian" ]
 then
     GET_ARCH="$(dpkg --print-architecture)"
-    if [ "${OSDISTVER}" -eq 10 ]
+    if [ "${OSDISTVER}" -ge 10 ]
     then
         GET_OS="${OSNAME}_${OSDISTVER}"
     else

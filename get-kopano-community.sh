@@ -143,7 +143,7 @@ REPO_BASE_FOLDER="${BASE_FOLDER:-/srv/repo/kopano}"
 
 function check_package_or_commands_are_installed {
 # check if needed packages are installed.
-NEEDED_PGK="curl jq apt-ftparchive"
+NEEDED_PGK="curl jq apt-ftparchive gnupg"
 for check_pkg in $NEEDED_PGK
 do
     if [ -z "$(command -v $check_pkg)" ]
@@ -239,14 +239,14 @@ function repo_enable_ZPush {
 if [ "${REPO_ENABLE_Z_PUSH}" = "yes" ]
     then
 
-    SET_Z_PUSH_REPO="https://download.kopano.io/zhub/z-push:/final/${GET_OS} /"
+    SET_Z_PUSH_REPO="https://download.kopano.io/zhub/z-push:/final/${GET_OS}"
     SET_Z_PUSH_FILENAME="kopano-z-push.list"
     echo "Checking for Z_PUSH Repo on ${OSNAME}."
 
     # install the repo key once.
     if [ "$(apt-key list | grep -c kopano)" -eq 0 ]; then
         echo -n "Installing z-push signing key."
-        curl -q -L "${SET_Z_PUSH_REPO}"/Release.key | sudo apt-key add -
+        curl -q -L "${SET_Z_PUSH_REPO}"/Release.key | apt-key add -
     else
         echo "The Kopano Z_PUSH repo key was already installed."
     fi
@@ -262,8 +262,8 @@ if [ "${REPO_ENABLE_Z_PUSH}" = "yes" ]
             echo "# Options to set are :"
             echo "# old-final = old-stable, final = stable, pre-final=testing, develop = experimental"
             echo "# "
-            echo "deb ${SET_Z_PUSH_REPO}"
-            } | sudo tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
+            echo "deb ${SET_Z_PUSH_REPO} /"
+            } | tee /etc/apt/sources.list.d/"${SET_Z_PUSH_FILENAME}" > /dev/null
             echo "Created file : /etc/apt/sources.list.d/${SET_Z_PUSH_FILENAME}"
         fi
 
@@ -375,6 +375,9 @@ then
     fi
 fi
 }
+
+# Get Z-Push
+repo_enable_ZPush
 
 # Cleanup workdir
 rm -rf  "$WORK_DIR"

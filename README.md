@@ -6,6 +6,9 @@ Scripts for Kopano.
 It's currently tested on Debian 10 and Ubuntu 20.04 but should work for Debian 8-9 and Ubuntu 16/18/20 .04 (LTS editions) also.<br>
 This eliminates the use of `dpkg -i *.deb on kopano-community files.`
 
+PLEASE NOTE, BULLSEYE SUPPORT IS BUILD IN BUT ITS NOT RELEASE YET BY KOPANO !!! 
+Resulting, bullseye is NOT YET supported. 
+
 It sets up a local file repo, which is easy to adapt for a webserver repo, examples are provided in the files.<br>
 Do note, verify if you are happy with the default script settings.<br>
 

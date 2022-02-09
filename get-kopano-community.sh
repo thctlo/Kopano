@@ -44,6 +44,8 @@ set -euo pipefail
 # Version 3.0.5 2021-08-23, The "Stupidity release.. fixed, incorrect OS detected, it was always Debian_10. 
 # Version 3.0.6 2021-08-23, Made function of dependencies, needed when building from source. 
 # Version 3.0.7 2021-08-30, Added support for Debian 11 Bullseye, ITS NOT IN KOPANO YET !! only enabled it in script.
+# Version 3.0.8 2022-02-09, Debian 11 Bullseye, still not in Kopano, added part to exit script.
+
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -104,6 +106,13 @@ OSNAME="$(lsb_release -si)"
 OSDIST="$(lsb_release -sc)"
 OSDISTVER="$(lsb_release -sr)"
 OSDISTVER0="$(lsb_release -sr|cut -c1).0"
+
+if [ "${OSDIST}" = "bullseye" ]
+then
+    echo "Sorry, this script can handle bullseye but its not yet release by Kopano, exiting now.. "
+    echo "When you see its released and these lines are still here, remove them and run it again and ping me on github ;-) thanks! "
+    exit 0
+fi
 
 # check OS/version
 if [ "${OSNAME}" = "Debian" ]

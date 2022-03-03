@@ -45,6 +45,7 @@ set -euo pipefail
 # Version 3.0.6 2021-08-23, Made function of dependencies, needed when building from source. 
 # Version 3.0.7 2021-08-30, Added support for Debian 11 Bullseye, ITS NOT IN KOPANO YET !! only enabled it in script.
 # Version 3.0.8 2022-02-09, Debian 11 Bullseye, still not in Kopano, added part to exit script.
+# Version 3.0.9 2022-03-03, Attempt to add LinuxMint 20.x support since it's based on Ubuntu FocalFossa 20.04.
 
 #
 # Original sources used, my previous file and :
@@ -130,6 +131,13 @@ then
     # For ubuntu results in Ubuntu_20.04
     GET_OS="${OSNAME}_${OSDISTVER}"
     GET_ARCH="$(dpkg --print-architecture)"
+elif [ "${OSNAME}" = "Linuxmint" ]
+then
+    # Attempt to use Ubuntu results, since LinuxMint is based on Ubuntu 20.04
+    OSNAME="Ubuntu"
+    OSDISTVER="20.04"
+    GET_OS="${OSNAME}_${OSDISTVER}"
+    GET_ARCH="$(dpkg --print-architecture)"
 fi
 
 ## Code Functions
@@ -152,7 +160,17 @@ REPO_BASE_FOLDER="${BASE_FOLDER:-/srv/repo/kopano}"
 
 function check_package_or_commands_are_installed {
 # check if needed packages are installed.
-NEEDED_PGK="curl jq apt-ftparchive gnupg"
+if [ "${OSNAME}" = "Debian" ]
+then
+    NEEDED_PGK="curl jq apt-ftparchive gnupg"
+elif [ "${OSNAME}" = "Ubuntu" ]
+then
+    NEEDED_PGK="curl jq apt-ftparchive gpg"
+elif [ "${OSNAME}" = "Linuxmint" ]
+then
+    NEEDED_PGK="curl jq apt-ftparchive gpg"
+fi
+
 for check_pkg in $NEEDED_PGK
 do
     if [ -z "$(command -v $check_pkg)" ]
@@ -344,7 +362,7 @@ do
     IFS=$SAVEIFS
 done
 function missingBuildDepends(){
-# Get missing dependecies
+# Get missing dependecies (* only needed to BUILD packages.)
 # https://download.kopano.io/community/dependencies%3A/ 
 # Needs manual input for now. 
 if [ "${OSNAME}" = "Debian" ]
@@ -378,7 +396,7 @@ then
         echo "Now sort on \"Last modified\" and get the latest version for your OS."
         read -r -p "Copy the link address to the file and post it here : " DEPENDS_URL
         DEPENDS_FILENAME="$(echo $DEPENDS_URL|awk -F"/" '{ print $6 }')"
-        curl -s -S -L -o "$DEPENDS_FILENAME" $DEPENDS_URL
+        curl -s -S -L -o "$DEPENDS_FILENAME" "$DEPENDS_URL"
         tar -zxf "$DEPENDS_FILENAME" -C "$REPO_BASE_FOLDER/$GET_ARCH/" --strip-components 2
         unset DEPENDS_URL
     fi

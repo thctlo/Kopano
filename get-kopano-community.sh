@@ -46,7 +46,8 @@ set -euo pipefail
 # Version 3.0.7 2021-08-30, Added support for Debian 11 Bullseye, ITS NOT IN KOPANO YET !! only enabled it in script.
 # Version 3.0.8 2022-02-09, Debian 11 Bullseye, still not in Kopano, added part to exit script.
 # Version 3.0.9 2022-03-03, Attempt to add LinuxMint 20.x support since it's based on Ubuntu FocalFossa 20.04.
-
+# Version 3.0.10 2022-03-07,  kopano-webapp z-push-kopano are added for the install due filename changes. 
+# 
 #
 # Original sources used, my previous file and :
 # https://github.com/zokradonh/kopano-docker/master/base/create-kopano-repo.sh
@@ -421,8 +422,6 @@ echo " "
 echo " "
 echo "The AD DC extension can be found here: https://download.kopano.io/community/adextension:/"
 echo "The Outlook extension : https://download.kopano.io/community/olextension:/"
-echo "Install the complete kopano stack at once with : apt install kopano-server-packages"
-echo "The script got the following packages ready for install for you: "
-echo "$KOPANO_COMMUNITY_PKG z-push"
+echo "Install the complete kopano stack at once with : apt install kopano-server-packages kopano-webapp z-push-kopano"
 echo ""
-echo "When you are upgrading: apt dist-upgrade && kopano-dbadm usmp"
+echo "When you are upgrading run: apt dist-upgrade && kopano-dbadm usmp"

@@ -63,7 +63,7 @@ the repo example file:<br>
 If you like my work, support me a bit, even with 1 $ you are helping me.<br>
 I dont ask for hunderds, a (few) buck(s) is/are a great gift also.<br>
 - [Donate via Paypal](https://www.paypal.me/LouisVanBelle) (my paypal email is louis at van-belle .nl)<br>
-- Donate via Bitcoin: 3BMEXFUrncjVKByryNU1fcVLBLKE8i9TpX<br>
+
 
 ## Thanks
 @Christian Knittl-Frank for fixes so far. (https://github.com/lcnittl)<br>
